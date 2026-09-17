@@ -21,29 +21,33 @@ CREATE INDEX IF NOT EXISTS ingredients_expiry_date_idx ON public.ingredients(exp
 -- Enable Row Level Security (RLS)
 ALTER TABLE public.ingredients ENABLE ROW LEVEL SECURITY;
 
--- Create policies for public access (no authentication required for MVP)
--- Note: For production, you should implement proper authentication
+-- Policies scoped to the logged-in user (auth.uid()).
+-- Drop legacy public-access policies first so this script is safe to re-run.
+DROP POLICY IF EXISTS "Enable read access for all users" ON public.ingredients;
+DROP POLICY IF EXISTS "Enable insert access for all users" ON public.ingredients;
+DROP POLICY IF EXISTS "Enable update access for all users" ON public.ingredients;
+DROP POLICY IF EXISTS "Enable delete access for all users" ON public.ingredients;
+DROP POLICY IF EXISTS "Users can view own ingredients" ON public.ingredients;
+DROP POLICY IF EXISTS "Users can insert own ingredients" ON public.ingredients;
+DROP POLICY IF EXISTS "Users can update own ingredients" ON public.ingredients;
+DROP POLICY IF EXISTS "Users can delete own ingredients" ON public.ingredients;
 
--- Allow anyone to read ingredients
-CREATE POLICY "Enable read access for all users" ON public.ingredients
+CREATE POLICY "Users can view own ingredients" ON public.ingredients
   FOR SELECT
-  USING (true);
+  USING (auth.uid() = user_id);
 
--- Allow anyone to insert ingredients
-CREATE POLICY "Enable insert access for all users" ON public.ingredients
+CREATE POLICY "Users can insert own ingredients" ON public.ingredients
   FOR INSERT
-  WITH CHECK (true);
+  WITH CHECK (auth.uid() = user_id);
 
--- Allow anyone to update ingredients
-CREATE POLICY "Enable update access for all users" ON public.ingredients
+CREATE POLICY "Users can update own ingredients" ON public.ingredients
   FOR UPDATE
-  USING (true)
-  WITH CHECK (true);
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
 
--- Allow anyone to delete ingredients
-CREATE POLICY "Enable delete access for all users" ON public.ingredients
+CREATE POLICY "Users can delete own ingredients" ON public.ingredients
   FOR DELETE
-  USING (true);
+  USING (auth.uid() = user_id);
 
 -- Optional: Create a function to automatically calculate status based on expiry_date
 CREATE OR REPLACE FUNCTION calculate_ingredient_status(p_expiry_date DATE)

@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import type { Session } from '@supabase/supabase-js';
 import { Landing } from './components/Landing';
+import { Login } from './components/Login';
 import { Home } from './components/Home';
 import { AddIngredient } from './components/AddIngredient';
 import { RecipeList } from './components/RecipeList';
@@ -28,6 +30,8 @@ export interface OnboardingProgress {
 }
 
 export default function App() {
+  const [session, setSession] = useState<Session | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState<Page>('landing');
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
   const [loading, setLoading] = useState(true);
@@ -60,10 +64,33 @@ export default function App() {
     }
   };
 
-  // Load ingredients from Supabase
+  // Track auth session
   useEffect(() => {
-    loadIngredients();
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setAuthLoading(false);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      setAuthLoading(false);
+      if (session) {
+        setCurrentPage((prev) => (prev === 'landing' ? 'home' : prev));
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
+
+  // Load ingredients from Supabase once logged in
+  useEffect(() => {
+    if (session) {
+      loadIngredients();
+    } else {
+      setIngredients([]);
+      setLoading(false);
+    }
+  }, [session]);
 
   const loadIngredients = async () => {
     try {
@@ -93,6 +120,7 @@ export default function App() {
   };
 
   const addIngredient = async (ingredient: Omit<Ingredient, 'id' | 'status' | 'createdAt'>) => {
+    if (!session) return;
     try {
       const status = calculateStatus(ingredient.expiryDate);
 
@@ -104,6 +132,7 @@ export default function App() {
             expiry_date: ingredient.expiryDate,
             storage: ingredient.storage,
             status: status,
+            user_id: session.user.id,
           },
         ])
         .select();
@@ -215,14 +244,33 @@ export default function App() {
     setCurrentPage('add');
   };
 
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    setCurrentPage('landing');
+  };
+
   const handleCompleteTour = () => {
     setShowOnboardingTour(false);
     setOnboardingProgress(prev => ({ ...prev, hasCompletedTour: true }));
   };
 
   const renderPage = () => {
-    if (loading && currentPage === 'landing') {
+    if (authLoading) {
+      return (
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4"></div>
+          </div>
+        </div>
+      );
+    }
+
+    if (currentPage === 'landing') {
       return <Landing onStart={handleStartFromLanding} onQuickStart={handleQuickStartFromLanding} />;
+    }
+
+    if (!session) {
+      return <Login />;
     }
 
     if (loading) {
@@ -250,6 +298,7 @@ export default function App() {
               onNavigate={handleNavigate}
               onDelete={deleteIngredient}
               onboardingProgress={onboardingProgress}
+              onSignOut={handleSignOut}
             />
           </>
         );

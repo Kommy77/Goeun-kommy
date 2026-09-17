@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { ArrowLeft, Refrigerator, Snowflake, Camera, Mic, Plus, Carrot, Egg, Milk } from 'lucide-react';
+import React, { useRef, useState } from 'react';
+import { ArrowLeft, Refrigerator, Snowflake, Camera, Mic, Plus, Carrot, Egg, Milk, Trash2, Loader2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { StorageType } from '../App';
@@ -7,6 +7,14 @@ import { StorageType } from '../App';
 interface AddIngredientProps {
   onAdd: (ingredient: { name: string; expiryDate: string; storage: StorageType }) => void;
   onBack: () => void;
+}
+
+interface ReviewItem {
+  id: string;
+  name: string;
+  expiryDate: string;
+  storage: StorageType;
+  checked: boolean;
 }
 
 // 자주 쓰는 재료 템플릿
@@ -31,11 +39,22 @@ const QUICK_TEMPLATES = [
   },
 ];
 
+function addDays(days: number) {
+  const date = new Date();
+  date.setDate(date.getDate() + days);
+  return date.toISOString().split('T')[0];
+}
+
 export function AddIngredient({ onAdd, onBack }: AddIngredientProps) {
   const [name, setName] = useState('');
   const [expiryDate, setExpiryDate] = useState('');
   const [storage, setStorage] = useState<StorageType>('냉장');
   const [showTemplates, setShowTemplates] = useState(true);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isRecognizing, setIsRecognizing] = useState(false);
+  const [recognizeError, setRecognizeError] = useState<string | null>(null);
+  const [reviewItems, setReviewItems] = useState<ReviewItem[] | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,11 +72,7 @@ export function AddIngredient({ onAdd, onBack }: AddIngredientProps) {
     return today.toISOString().split('T')[0];
   };
 
-  const getDefaultExpiryDate = (days: number = 7) => {
-    const date = new Date();
-    date.setDate(date.getDate() + days);
-    return date.toISOString().split('T')[0];
-  };
+  const getDefaultExpiryDate = (days: number = 7) => addDays(days);
 
   const handleQuickAdd = (itemName: string) => {
     onAdd({
@@ -68,14 +83,166 @@ export function AddIngredient({ onAdd, onBack }: AddIngredientProps) {
   };
 
   const handleCameraClick = () => {
-    // TODO: 실제 카메라/사진 인식 API 연동
-    alert('📸 사진 인식 기능은 곧 업데이트됩니다!\n\n냉장고 사진을 찍으면 AI가 재료를 자동으로 인식합니다.');
+    setRecognizeError(null);
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+
+    setIsRecognizing(true);
+    setRecognizeError(null);
+
+    try {
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const result = reader.result as string;
+          resolve(result.split(',')[1] ?? '');
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      const res = await fetch('/api/recognize-fridge', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ imageBase64: base64, mediaType: file.type || 'image/jpeg' }),
+      });
+
+      if (!res.ok) throw new Error('사진 인식에 실패했어요');
+
+      const { items } = await res.json();
+
+      if (!items || items.length === 0) {
+        setRecognizeError('사진에서 식재료를 찾지 못했어요. 다시 시도하거나 직접 입력해주세요.');
+        return;
+      }
+
+      setReviewItems(
+        items.map((item: { name: string; storage: StorageType; shelfLifeDays: number }, idx: number) => ({
+          id: `${Date.now()}-${idx}`,
+          name: item.name,
+          expiryDate: addDays(item.shelfLifeDays ?? 7),
+          storage: item.storage === '냉동' ? '냉동' : '냉장',
+          checked: true,
+        }))
+      );
+    } catch (err) {
+      setRecognizeError('사진 인식 중 오류가 발생했어요. 다시 시도해주세요.');
+    } finally {
+      setIsRecognizing(false);
+    }
   };
 
   const handleVoiceClick = () => {
     // TODO: 실제 음성 인식 API 연동
     alert('🎤 음성 입력 기능은 곧 업데이트됩니다!\n\n"양파, 당근, 대파 추가"라고 말하면 한 번에 등록됩니다.');
   };
+
+  const updateReviewItem = (id: string, patch: Partial<ReviewItem>) => {
+    setReviewItems((prev) => prev?.map((item) => (item.id === id ? { ...item, ...patch } : item)) ?? null);
+  };
+
+  const removeReviewItem = (id: string) => {
+    setReviewItems((prev) => prev?.filter((item) => item.id !== id) ?? null);
+  };
+
+  const confirmReviewItems = () => {
+    if (!reviewItems) return;
+    reviewItems
+      .filter((item) => item.checked && item.name.trim() && item.expiryDate)
+      .forEach((item) => onAdd({ name: item.name.trim(), expiryDate: item.expiryDate, storage: item.storage }));
+    setReviewItems(null);
+  };
+
+  // 사진 인식 결과 확인 화면
+  if (reviewItems) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
+          <div className="px-6 py-4 flex items-center gap-3">
+            <button
+              onClick={() => setReviewItems(null)}
+              className="p-2 -ml-2 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <ArrowLeft className="w-5 h-5 text-gray-700" />
+            </button>
+            <h1 className="text-xl font-semibold text-gray-900">인식 결과 확인</h1>
+          </div>
+        </div>
+
+        <div className="p-6 space-y-4">
+          <p className="text-sm text-gray-600">
+            AI가 인식한 식재료예요. 확인/수정 후 등록해주세요.
+          </p>
+
+          {reviewItems.map((item) => (
+            <div key={item.id} className="bg-white rounded-xl border border-gray-200 p-4 space-y-3">
+              <div className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  checked={item.checked}
+                  onChange={(e) => updateReviewItem(item.id, { checked: e.target.checked })}
+                  className="w-5 h-5 accent-emerald-500"
+                />
+                <Input
+                  value={item.name}
+                  onChange={(e) => updateReviewItem(item.id, { name: e.target.value })}
+                  className="flex-1"
+                />
+                <button
+                  onClick={() => removeReviewItem(item.id)}
+                  className="p-2 text-gray-400 hover:text-red-500 transition-colors"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+              <div className="flex gap-3 pl-8">
+                <Input
+                  type="date"
+                  value={item.expiryDate}
+                  onChange={(e) => updateReviewItem(item.id, { expiryDate: e.target.value })}
+                  className="flex-1"
+                />
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => updateReviewItem(item.id, { storage: '냉장' })}
+                    className={`px-3 py-2 rounded-lg text-sm border ${
+                      item.storage === '냉장' ? 'border-emerald-500 bg-emerald-50 text-emerald-700' : 'border-gray-200 text-gray-500'
+                    }`}
+                  >
+                    냉장
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => updateReviewItem(item.id, { storage: '냉동' })}
+                    className={`px-3 py-2 rounded-lg text-sm border ${
+                      item.storage === '냉동' ? 'border-emerald-500 bg-emerald-50 text-emerald-700' : 'border-gray-200 text-gray-500'
+                    }`}
+                  >
+                    냉동
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+
+          <Button
+            onClick={confirmReviewItems}
+            size="lg"
+            className="w-full"
+            disabled={!reviewItems.some((item) => item.checked)}
+          >
+            선택한 재료 등록하기 ({reviewItems.filter((item) => item.checked).length}개)
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -93,18 +260,37 @@ export function AddIngredient({ onAdd, onBack }: AddIngredientProps) {
       </div>
 
       <div className="p-6 space-y-6">
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          capture="environment"
+          className="hidden"
+          onChange={handleFileChange}
+        />
+
         {/* 입력 방식 선택 */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4">
           <p className="text-sm font-medium text-gray-700 mb-3">빠른 등록 방법</p>
+          {recognizeError && (
+            <p className="text-sm text-red-600 mb-3">{recognizeError}</p>
+          )}
           <div className="grid grid-cols-2 gap-3">
             <button
               onClick={handleCameraClick}
-              className="flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-dashed border-emerald-300 bg-emerald-50 hover:bg-emerald-100 transition-colors"
+              disabled={isRecognizing}
+              className="flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-dashed border-emerald-300 bg-emerald-50 hover:bg-emerald-100 transition-colors disabled:opacity-60"
             >
               <div className="w-12 h-12 bg-emerald-500 rounded-full flex items-center justify-center">
-                <Camera className="w-6 h-6 text-white" />
+                {isRecognizing ? (
+                  <Loader2 className="w-6 h-6 text-white animate-spin" />
+                ) : (
+                  <Camera className="w-6 h-6 text-white" />
+                )}
               </div>
-              <span className="text-sm font-medium text-emerald-700">사진으로 등록</span>
+              <span className="text-sm font-medium text-emerald-700">
+                {isRecognizing ? 'AI가 인식 중...' : '사진으로 등록'}
+              </span>
               <span className="text-xs text-emerald-600">냉장고 사진 한 장으로!</span>
             </button>
             <button

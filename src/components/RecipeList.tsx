@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { ArrowLeft, ChefHat, Clock, Users, Heart, Bookmark } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { ArrowLeft, ChefHat, Clock, Users, Heart, Bookmark, Sparkles, Loader2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { RecipeCard } from './ui/RecipeCard';
 import { RecipeDetail } from './ui/RecipeDetail';
@@ -121,36 +121,77 @@ const seedRecipes: Recipe[] = [
   },
 ];
 
-export function RecipeList({ ingredients, onBack }: RecipeListProps) {
-  const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
+function getFallbackRecipes(ingredients: Ingredient[]): Recipe[] {
+  const userIngredientNames = ingredients.map((ing) => ing.name.toLowerCase());
 
-  // Calculate match rate based on user's ingredients
-  const userIngredientNames = ingredients.map(ing => ing.name.toLowerCase());
-  
-  const recipesWithMatch = seedRecipes.map(recipe => {
-    const requiredLower = recipe.requiredIngredients.map(ing => ing.toLowerCase());
-    const matchCount = requiredLower.filter(req => 
-      userIngredientNames.some(userIng => 
-        req.includes(userIng) || userIng.includes(req)
-      )
+  const recipesWithMatch = seedRecipes.map((recipe) => {
+    const requiredLower = recipe.requiredIngredients.map((ing) => ing.toLowerCase());
+    const matchCount = requiredLower.filter((req) =>
+      userIngredientNames.some((userIng) => req.includes(userIng) || userIng.includes(req))
     ).length;
     const matchRate = Math.round((matchCount / requiredLower.length) * 100);
-    
-    const missing = recipe.requiredIngredients.filter(req => 
-      !userIngredientNames.some(userIng => 
-        req.toLowerCase().includes(userIng) || userIng.includes(req.toLowerCase())
-      )
+
+    const missing = recipe.requiredIngredients.filter(
+      (req) => !userIngredientNames.some((userIng) => req.toLowerCase().includes(userIng) || userIng.includes(req.toLowerCase()))
     );
-    
-    return {
-      ...recipe,
-      matchRate,
-      missingIngredients: missing,
-    };
+
+    return { ...recipe, matchRate, missingIngredients: missing };
   });
 
-  // Sort by match rate
-  const sortedRecipes = [...recipesWithMatch].sort((a, b) => b.matchRate - a.matchRate);
+  return [...recipesWithMatch].sort((a, b) => b.matchRate - a.matchRate);
+}
+
+export function RecipeList({ ingredients, onBack }: RecipeListProps) {
+  const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
+  const [aiRecipes, setAiRecipes] = useState<Recipe[] | null>(null);
+  const [isLoadingAi, setIsLoadingAi] = useState(false);
+  const [aiFailed, setAiFailed] = useState(false);
+
+  useEffect(() => {
+    if (ingredients.length === 0) return;
+
+    let cancelled = false;
+    setIsLoadingAi(true);
+    setAiFailed(false);
+
+    fetch('/api/recommend-recipes', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        ingredients: ingredients.map((ing) => ({ name: ing.name, status: ing.status })),
+      }),
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error('추천 실패');
+        return res.json();
+      })
+      .then((data) => {
+        if (cancelled) return;
+        const recipes: Recipe[] = (data.recipes ?? []).map((r: Omit<Recipe, 'id' | 'image' | 'likes' | 'saves'>, idx: number) => ({
+          ...r,
+          id: `ai-${idx}`,
+          image: 'ai-recipe',
+          likes: 0,
+          saves: 0,
+        }));
+        if (recipes.length === 0) throw new Error('빈 응답');
+        setAiRecipes(recipes);
+      })
+      .catch(() => {
+        if (!cancelled) setAiFailed(true);
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoadingAi(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [ingredients]);
+
+  const sortedRecipes = aiRecipes
+    ? [...aiRecipes].sort((a, b) => b.matchRate - a.matchRate)
+    : getFallbackRecipes(ingredients);
 
   if (selectedRecipe) {
     return (
@@ -180,6 +221,22 @@ export function RecipeList({ ingredients, onBack }: RecipeListProps) {
             <ChefHat className="w-4 h-4" />
             <span>보유 식재료 {ingredients.length}개 기준</span>
           </div>
+
+          {isLoadingAi && (
+            <div className="flex items-center gap-2 text-sm text-emerald-600 mt-2">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span>AI가 레시피를 만들고 있어요...</span>
+            </div>
+          )}
+          {aiRecipes && !isLoadingAi && (
+            <div className="flex items-center gap-2 text-sm text-emerald-600 mt-2">
+              <Sparkles className="w-4 h-4" />
+              <span>AI 맞춤 추천</span>
+            </div>
+          )}
+          {aiFailed && !isLoadingAi && (
+            <p className="text-xs text-gray-400 mt-2">AI 추천을 불러오지 못해 기본 레시피를 보여드려요</p>
+          )}
         </div>
       </div>
 

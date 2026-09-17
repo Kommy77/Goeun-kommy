@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, ChefHat, AlertCircle, Calendar, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Plus, ChefHat, AlertCircle, Calendar, CheckCircle2, ArrowRight, LogOut } from 'lucide-react';
 import { Button } from './ui/button';
 import { IngredientCard } from './ui/IngredientCard';
 import { BottomNav } from './ui/BottomNav';
@@ -10,9 +10,10 @@ interface HomeProps {
   onNavigate: (page: Page) => void;
   onDelete: (id: string) => void;
   onboardingProgress?: OnboardingProgress;
+  onSignOut?: () => void;
 }
 
-export function Home({ ingredients, onNavigate, onDelete, onboardingProgress }: HomeProps) {
+export function Home({ ingredients, onNavigate, onDelete, onboardingProgress, onSignOut }: HomeProps) {
   const [activeTab, setActiveTab] = useState<'all' | 'alerts'>('all');
 
   // Filter ingredients that are expiring soon or today
@@ -39,15 +40,26 @@ export function Home({ ingredients, onNavigate, onDelete, onboardingProgress }: 
         <div className="px-6 py-4">
           <div className="flex items-center justify-between mb-4">
             <h1 className="text-2xl font-bold text-gray-900">FreshKeeper</h1>
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => onNavigate('add')}
-              className="gap-1"
-            >
-              <Plus className="w-4 h-4" />
-              등록
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => onNavigate('add')}
+                className="gap-1"
+              >
+                <Plus className="w-4 h-4" />
+                등록
+              </Button>
+              {onSignOut && (
+                <button
+                  onClick={onSignOut}
+                  className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                  aria-label="로그아웃"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Tabs */}
