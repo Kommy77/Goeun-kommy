@@ -10,33 +10,29 @@ interface IngredientCardProps {
 export function IngredientCard({ ingredient, onDelete }: IngredientCardProps) {
   const statusConfig = {
     '여유': {
-      bgColor: 'bg-emerald-50',
-      textColor: 'text-emerald-700',
-      borderColor: 'border-emerald-200',
+      bgColor: 'bg-brand-50',
+      textColor: 'text-brand-700',
       label: '여유',
     },
     '임박': {
-      bgColor: 'bg-orange-50',
-      textColor: 'text-orange-700',
-      borderColor: 'border-orange-200',
+      bgColor: 'bg-warn-50',
+      textColor: 'text-warn-600',
       label: '임박',
     },
     '오늘': {
-      bgColor: 'bg-red-50',
-      textColor: 'text-red-700',
-      borderColor: 'border-red-200',
+      bgColor: 'bg-danger-50',
+      textColor: 'text-danger-600',
       label: '오늘',
     },
     '초과': {
-      bgColor: 'bg-gray-50',
-      textColor: 'text-gray-700',
-      borderColor: 'border-gray-300',
+      bgColor: 'bg-neutral-100',
+      textColor: 'text-neutral-500',
       label: '초과',
     },
   };
 
   const config = statusConfig[ingredient.status];
-  
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const month = date.getMonth() + 1;
@@ -50,20 +46,20 @@ export function IngredientCard({ ingredient, onDelete }: IngredientCardProps) {
     const expiry = new Date(expiryDate);
     expiry.setHours(0, 0, 0, 0);
     const diffDays = Math.ceil((expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-    
+
     if (diffDays < 0) return `${Math.abs(diffDays)}일 초과`;
     if (diffDays === 0) return '오늘';
     return `D-${diffDays}`;
   };
 
   return (
-    <div className={`bg-white rounded-xl p-4 border ${config.borderColor} transition-all hover:shadow-md`}>
+    <div className="bg-white rounded-2xl p-4 shadow-card transition-shadow hover:shadow-card-hover">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3 flex-1 min-w-0">
           {/* Storage Icon */}
-          <div className="flex-shrink-0 w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+          <div className="flex-shrink-0 w-10 h-10 bg-neutral-100 rounded-xl flex items-center justify-center">
             {ingredient.storage === '냉장' ? (
-              <Refrigerator className="w-5 h-5 text-gray-600" />
+              <Refrigerator className="w-5 h-5 text-neutral-500" />
             ) : (
               <Snowflake className="w-5 h-5 text-blue-500" />
             )}
@@ -71,28 +67,28 @@ export function IngredientCard({ ingredient, onDelete }: IngredientCardProps) {
 
           {/* Info */}
           <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-gray-900 mb-1 truncate">
+            <h3 className="font-semibold text-neutral-900 mb-1 truncate">
               {ingredient.name}
             </h3>
-            <div className="flex items-center gap-2 text-sm text-gray-600">
+            <div className="flex items-center gap-1.5 text-sm text-neutral-500">
               <span>{formatDate(ingredient.expiryDate)}</span>
-              <span className="text-gray-400">·</span>
+              <span className="text-neutral-300">·</span>
               <span>{ingredient.storage}</span>
             </div>
           </div>
         </div>
 
         {/* Status & Delete */}
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <span className={`px-2.5 py-1 rounded-lg text-xs font-medium ${config.bgColor} ${config.textColor}`}>
+        <div className="flex items-center gap-1 flex-shrink-0">
+          <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${config.bgColor} ${config.textColor}`}>
             {getDaysRemaining(ingredient.expiryDate)}
           </span>
           <button
             onClick={() => onDelete(ingredient.id)}
-            className="p-2 hover:bg-red-50 rounded-lg transition-colors group"
+            className="p-2 hover:bg-danger-50 rounded-lg transition-colors group"
             aria-label="삭제"
           >
-            <Trash2 className="w-4 h-4 text-gray-400 group-hover:text-red-600" />
+            <Trash2 className="w-4 h-4 text-neutral-300 group-hover:text-danger-600" />
           </button>
         </div>
       </div>

@@ -11,9 +11,9 @@ const TOUR_STEPS = [
   {
     title: 'Step 1. 냉장고 재료 추가하기',
     description: '사진으로 한 번에 등록하거나 자주 쓰는 재료를 원클릭으로 추가하세요!',
-    icon: <Camera className="w-8 h-8 text-emerald-600" />,
+    icon: <Camera className="w-8 h-8 text-brand-600" />,
     tip: '📸 사진으로 한 번에 등록하세요!',
-    color: 'bg-emerald-50 border-emerald-200',
+    color: 'bg-brand-50 border-brand-200',
   },
   {
     title: 'Step 2. 오늘의 추천 레시피 보기',
@@ -60,17 +60,17 @@ export function OnboardingTour({ onComplete, currentStep = 0 }: OnboardingTourPr
                 key={idx}
                 className={`h-1.5 rounded-full transition-all ${
                   idx === step
-                    ? 'w-6 bg-emerald-500'
+                    ? 'w-6 bg-brand-500'
                     : idx < step
-                    ? 'w-3 bg-emerald-300'
-                    : 'w-3 bg-gray-200'
+                    ? 'w-3 bg-brand-300'
+                    : 'w-3 bg-neutral-200'
                 }`}
               />
             ))}
           </div>
           <button
             onClick={handleSkip}
-            className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+            className="p-2 text-neutral-400 hover:text-neutral-600 transition-colors"
             aria-label="건너뛰기"
           >
             <X className="w-5 h-5" />
@@ -85,14 +85,14 @@ export function OnboardingTour({ onComplete, currentStep = 0 }: OnboardingTourPr
                 {currentStepData.icon}
               </div>
               <div className="flex-1">
-                <h3 className="text-lg font-bold text-gray-900 mb-2">
+                <h3 className="text-lg font-bold text-neutral-900 mb-2">
                   {currentStepData.title}
                 </h3>
-                <p className="text-sm text-gray-600 mb-3">
+                <p className="text-sm text-neutral-600 mb-3">
                   {currentStepData.description}
                 </p>
-                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white rounded-full text-xs font-medium text-gray-700 shadow-sm">
-                  <ArrowRight className="w-3 h-3 text-emerald-500" />
+                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white rounded-full text-xs font-medium text-neutral-700 shadow-sm">
+                  <ArrowRight className="w-3 h-3 text-brand-500" />
                   {currentStepData.tip}
                 </div>
               </div>
@@ -105,16 +105,16 @@ export function OnboardingTour({ onComplete, currentStep = 0 }: OnboardingTourPr
               <div
                 key={idx}
                 className={`flex items-center gap-2 text-xs ${
-                  idx <= step ? 'text-gray-700' : 'text-gray-400'
+                  idx <= step ? 'text-neutral-700' : 'text-neutral-400'
                 }`}
               >
                 <div
                   className={`w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold ${
                     idx < step
-                      ? 'bg-emerald-500'
+                      ? 'bg-brand-500'
                       : idx === step
-                      ? 'bg-emerald-500'
-                      : 'bg-gray-200'
+                      ? 'bg-brand-500'
+                      : 'bg-neutral-200'
                   }`}
                 >
                   {idx < step ? <Check className="w-3 h-3" /> : idx + 1}
@@ -129,14 +129,14 @@ export function OnboardingTour({ onComplete, currentStep = 0 }: OnboardingTourPr
           <Button
             onClick={handleNext}
             size="lg"
-            className="w-full bg-emerald-500 hover:bg-emerald-600 text-white"
+            className="w-full bg-brand-500 hover:bg-brand-600 text-white"
           >
             {step < totalSteps - 1 ? '다음' : '시작하기'}
           </Button>
           {step < totalSteps - 1 && (
             <button
               onClick={handleSkip}
-              className="w-full text-center text-sm text-gray-500 hover:text-gray-700 py-2"
+              className="w-full text-center text-sm text-neutral-500 hover:text-neutral-700 py-2"
             >
               건너뛰기
             </button>

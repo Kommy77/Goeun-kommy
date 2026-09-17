@@ -203,39 +203,39 @@ export function RecipeList({ ingredients, onBack }: RecipeListProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-6">
+    <div className="min-h-screen bg-neutral-50 pb-6">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
+      <div className="bg-white sticky top-0 z-10">
         <div className="px-6 py-4">
           <div className="flex items-center gap-3 mb-3">
             <button
               onClick={onBack}
-              className="p-2 -ml-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-2 -ml-2 hover:bg-neutral-100 rounded-xl transition-colors"
             >
-              <ArrowLeft className="w-5 h-5 text-gray-700" />
+              <ArrowLeft className="w-5 h-5 text-neutral-700" />
             </button>
-            <h1 className="text-xl font-semibold text-gray-900">맞춤 레시피</h1>
+            <h1 className="text-lg font-bold text-neutral-900">맞춤 레시피</h1>
           </div>
-          
-          <div className="flex items-center gap-2 text-sm text-gray-600">
+
+          <div className="flex items-center gap-2 text-sm text-neutral-500">
             <ChefHat className="w-4 h-4" />
             <span>보유 식재료 {ingredients.length}개 기준</span>
           </div>
 
           {isLoadingAi && (
-            <div className="flex items-center gap-2 text-sm text-emerald-600 mt-2">
+            <div className="flex items-center gap-2 text-sm text-brand-600 mt-2">
               <Loader2 className="w-4 h-4 animate-spin" />
               <span>AI가 레시피를 만들고 있어요...</span>
             </div>
           )}
           {aiRecipes && !isLoadingAi && (
-            <div className="flex items-center gap-2 text-sm text-emerald-600 mt-2">
+            <div className="flex items-center gap-2 text-sm text-brand-600 mt-2">
               <Sparkles className="w-4 h-4" />
               <span>AI 맞춤 추천</span>
             </div>
           )}
           {aiFailed && !isLoadingAi && (
-            <p className="text-xs text-gray-400 mt-2">AI 추천을 불러오지 못해 기본 레시피를 보여드려요</p>
+            <p className="text-xs text-neutral-400 mt-2">AI 추천을 불러오지 못해 기본 레시피를 보여드려요</p>
           )}
         </div>
       </div>
@@ -263,11 +263,11 @@ export function RecipeList({ ingredients, onBack }: RecipeListProps) {
 function EmptyState() {
   return (
     <div className="flex flex-col items-center justify-center py-16 text-center">
-      <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-        <ChefHat className="w-10 h-10 text-gray-400" />
+      <div className="w-20 h-20 bg-neutral-100 rounded-full flex items-center justify-center mb-4">
+        <ChefHat className="w-10 h-10 text-neutral-400" />
       </div>
-      <p className="text-gray-600 mb-2">등록된 식재료가 없습니다</p>
-      <p className="text-sm text-gray-500">
+      <p className="text-neutral-600 mb-2">등록된 식재료가 없습니다</p>
+      <p className="text-sm text-neutral-500">
         식재료를 등록하면 맞춤 레시피를 추천해드려요
       </p>
     </div>

@@ -23,19 +23,19 @@ const QUICK_TEMPLATES = [
     name: '기본 채소 세트',
     icon: <Carrot className="w-4 h-4" />,
     items: ['양파', '당근', '대파', '마늘', '감자'],
-    color: 'bg-green-50 border-green-200 text-green-700',
+    color: 'bg-green-50 text-green-700',
   },
   {
     name: '냉장고 필수품',
     icon: <Egg className="w-4 h-4" />,
     items: ['계란', '두부', '버터'],
-    color: 'bg-yellow-50 border-yellow-200 text-yellow-700',
+    color: 'bg-yellow-50 text-yellow-700',
   },
   {
     name: '유제품 세트',
     icon: <Milk className="w-4 h-4" />,
     items: ['우유', '치즈', '요거트'],
-    color: 'bg-blue-50 border-blue-200 text-blue-700',
+    color: 'bg-blue-50 text-blue-700',
   },
 ];
 
@@ -161,58 +161,58 @@ export function AddIngredient({ onAdd, onBack }: AddIngredientProps) {
   // 사진 인식 결과 확인 화면
   if (reviewItems) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
+      <div className="min-h-screen bg-neutral-50">
+        <div className="bg-white sticky top-0 z-10">
           <div className="px-6 py-4 flex items-center gap-3">
             <button
               onClick={() => setReviewItems(null)}
-              className="p-2 -ml-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-2 -ml-2 hover:bg-neutral-100 rounded-xl transition-colors"
             >
-              <ArrowLeft className="w-5 h-5 text-gray-700" />
+              <ArrowLeft className="w-5 h-5 text-neutral-700" />
             </button>
-            <h1 className="text-xl font-semibold text-gray-900">인식 결과 확인</h1>
+            <h1 className="text-lg font-bold text-neutral-900">인식 결과 확인</h1>
           </div>
         </div>
 
-        <div className="p-6 space-y-4">
-          <p className="text-sm text-gray-600">
+        <div className="p-6 space-y-3 pb-28">
+          <p className="text-sm text-neutral-500 mb-1">
             AI가 인식한 식재료예요. 확인/수정 후 등록해주세요.
           </p>
 
           {reviewItems.map((item) => (
-            <div key={item.id} className="bg-white rounded-xl border border-gray-200 p-4 space-y-3">
+            <div key={item.id} className="bg-white rounded-2xl p-4 space-y-3 shadow-card">
               <div className="flex items-center gap-3">
                 <input
                   type="checkbox"
                   checked={item.checked}
                   onChange={(e) => updateReviewItem(item.id, { checked: e.target.checked })}
-                  className="w-5 h-5 accent-emerald-500"
+                  className="w-5 h-5 accent-brand-500"
                 />
                 <Input
                   value={item.name}
                   onChange={(e) => updateReviewItem(item.id, { name: e.target.value })}
-                  className="flex-1"
+                  className="flex-1 rounded-xl"
                 />
                 <button
                   onClick={() => removeReviewItem(item.id)}
-                  className="p-2 text-gray-400 hover:text-red-500 transition-colors"
+                  className="p-2 text-neutral-300 hover:text-danger-600 transition-colors"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
               </div>
-              <div className="flex gap-3 pl-8">
+              <div className="flex gap-2 pl-8">
                 <Input
                   type="date"
                   value={item.expiryDate}
                   onChange={(e) => updateReviewItem(item.id, { expiryDate: e.target.value })}
-                  className="flex-1"
+                  className="flex-1 rounded-xl"
                 />
-                <div className="flex gap-2">
+                <div className="flex gap-1.5">
                   <button
                     type="button"
                     onClick={() => updateReviewItem(item.id, { storage: '냉장' })}
-                    className={`px-3 py-2 rounded-lg text-sm border ${
-                      item.storage === '냉장' ? 'border-emerald-500 bg-emerald-50 text-emerald-700' : 'border-gray-200 text-gray-500'
+                    className={`px-3 py-2 rounded-xl text-sm font-medium transition-colors ${
+                      item.storage === '냉장' ? 'bg-brand-500 text-white' : 'bg-neutral-100 text-neutral-500'
                     }`}
                   >
                     냉장
@@ -220,8 +220,8 @@ export function AddIngredient({ onAdd, onBack }: AddIngredientProps) {
                   <button
                     type="button"
                     onClick={() => updateReviewItem(item.id, { storage: '냉동' })}
-                    className={`px-3 py-2 rounded-lg text-sm border ${
-                      item.storage === '냉동' ? 'border-emerald-500 bg-emerald-50 text-emerald-700' : 'border-gray-200 text-gray-500'
+                    className={`px-3 py-2 rounded-xl text-sm font-medium transition-colors ${
+                      item.storage === '냉동' ? 'bg-brand-500 text-white' : 'bg-neutral-100 text-neutral-500'
                     }`}
                   >
                     냉동
@@ -230,11 +230,13 @@ export function AddIngredient({ onAdd, onBack }: AddIngredientProps) {
               </div>
             </div>
           ))}
+        </div>
 
+        <div className="fixed bottom-0 left-0 right-0 bg-white p-4 shadow-[0_-1px_0_0_rgba(26,23,18,0.06)]">
           <Button
             onClick={confirmReviewItems}
             size="lg"
-            className="w-full"
+            className="w-full h-14 rounded-2xl text-base font-semibold shadow-none"
             disabled={!reviewItems.some((item) => item.checked)}
           >
             선택한 재료 등록하기 ({reviewItems.filter((item) => item.checked).length}개)
@@ -245,17 +247,17 @@ export function AddIngredient({ onAdd, onBack }: AddIngredientProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-neutral-50">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
+      <div className="bg-white sticky top-0 z-10">
         <div className="px-6 py-4 flex items-center gap-3">
           <button
             onClick={onBack}
-            className="p-2 -ml-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 -ml-2 hover:bg-neutral-100 rounded-xl transition-colors"
           >
-            <ArrowLeft className="w-5 h-5 text-gray-700" />
+            <ArrowLeft className="w-5 h-5 text-neutral-700" />
           </button>
-          <h1 className="text-xl font-semibold text-gray-900">식재료 등록</h1>
+          <h1 className="text-lg font-bold text-neutral-900">식재료 등록</h1>
         </div>
       </div>
 
@@ -270,37 +272,37 @@ export function AddIngredient({ onAdd, onBack }: AddIngredientProps) {
         />
 
         {/* 입력 방식 선택 */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4">
-          <p className="text-sm font-medium text-gray-700 mb-3">빠른 등록 방법</p>
+        <div className="bg-white rounded-2xl shadow-card p-4">
+          <p className="text-sm font-semibold text-neutral-800 mb-3">빠른 등록 방법</p>
           {recognizeError && (
-            <p className="text-sm text-red-600 mb-3">{recognizeError}</p>
+            <p className="text-sm text-danger-600 mb-3">{recognizeError}</p>
           )}
           <div className="grid grid-cols-2 gap-3">
             <button
               onClick={handleCameraClick}
               disabled={isRecognizing}
-              className="flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-dashed border-emerald-300 bg-emerald-50 hover:bg-emerald-100 transition-colors disabled:opacity-60"
+              className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-brand-50 hover:bg-brand-100 transition-colors disabled:opacity-60"
             >
-              <div className="w-12 h-12 bg-emerald-500 rounded-full flex items-center justify-center">
+              <div className="w-11 h-11 bg-brand-500 rounded-full flex items-center justify-center">
                 {isRecognizing ? (
-                  <Loader2 className="w-6 h-6 text-white animate-spin" />
+                  <Loader2 className="w-5 h-5 text-white animate-spin" />
                 ) : (
-                  <Camera className="w-6 h-6 text-white" />
+                  <Camera className="w-5 h-5 text-white" />
                 )}
               </div>
-              <span className="text-sm font-medium text-emerald-700">
+              <span className="text-sm font-semibold text-brand-700">
                 {isRecognizing ? 'AI가 인식 중...' : '사진으로 등록'}
               </span>
-              <span className="text-xs text-emerald-600">냉장고 사진 한 장으로!</span>
+              <span className="text-xs text-brand-600">냉장고 사진 한 장으로!</span>
             </button>
             <button
               onClick={handleVoiceClick}
-              className="flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-dashed border-purple-300 bg-purple-50 hover:bg-purple-100 transition-colors"
+              className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-purple-50 hover:bg-purple-100 transition-colors"
             >
-              <div className="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center">
-                <Mic className="w-6 h-6 text-white" />
+              <div className="w-11 h-11 bg-purple-500 rounded-full flex items-center justify-center">
+                <Mic className="w-5 h-5 text-white" />
               </div>
-              <span className="text-sm font-medium text-purple-700">음성으로 등록</span>
+              <span className="text-sm font-semibold text-purple-700">음성으로 등록</span>
               <span className="text-xs text-purple-600">"양파, 당근 추가"</span>
             </button>
           </div>
@@ -308,29 +310,29 @@ export function AddIngredient({ onAdd, onBack }: AddIngredientProps) {
 
         {/* 자주 쓰는 재료 템플릿 */}
         {showTemplates && (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4">
+          <div className="bg-white rounded-2xl shadow-card p-4">
             <div className="flex items-center justify-between mb-3">
-              <p className="text-sm font-medium text-gray-700">자주 쓰는 재료 원클릭 추가</p>
+              <p className="text-sm font-semibold text-neutral-800">자주 쓰는 재료 원클릭 추가</p>
               <button
                 onClick={() => setShowTemplates(false)}
-                className="text-xs text-gray-400 hover:text-gray-600"
+                className="text-xs text-neutral-400 hover:text-neutral-600"
               >
                 접기
               </button>
             </div>
             <div className="space-y-3">
               {QUICK_TEMPLATES.map((template) => (
-                <div key={template.name} className={`rounded-xl border p-3 ${template.color}`}>
+                <div key={template.name} className={`rounded-2xl p-3 ${template.color}`}>
                   <div className="flex items-center gap-2 mb-2">
                     {template.icon}
-                    <span className="text-sm font-medium">{template.name}</span>
+                    <span className="text-sm font-semibold">{template.name}</span>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {template.items.map((item) => (
                       <button
                         key={item}
                         onClick={() => handleQuickAdd(item)}
-                        className="inline-flex items-center gap-1 px-3 py-1.5 bg-white rounded-full text-xs font-medium border hover:shadow-sm transition-shadow"
+                        className="inline-flex items-center gap-1 px-3 py-1.5 bg-white rounded-full text-xs font-medium shadow-card hover:shadow-card-hover transition-shadow"
                       >
                         <Plus className="w-3 h-3" />
                         {item}
@@ -345,15 +347,13 @@ export function AddIngredient({ onAdd, onBack }: AddIngredientProps) {
 
         {/* 직접 입력 폼 */}
         <form onSubmit={handleSubmit}>
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 space-y-6">
-            <div className="flex items-center gap-2 pb-3 border-b border-gray-100">
-              <span className="text-sm font-medium text-gray-500">또는 직접 입력</span>
-            </div>
+          <div className="bg-white rounded-2xl shadow-card p-5 space-y-5">
+            <span className="text-sm font-semibold text-neutral-800">또는 직접 입력</span>
 
             {/* Name Input */}
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-                식재료 이름 *
+              <label htmlFor="name" className="block text-sm font-medium text-neutral-600 mb-2">
+                식재료 이름
               </label>
               <Input
                 id="name"
@@ -361,14 +361,15 @@ export function AddIngredient({ onAdd, onBack }: AddIngredientProps) {
                 placeholder="예: 우유, 달걀, 양파..."
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+                className="rounded-xl h-12"
                 required
               />
             </div>
 
             {/* Expiry Date Input */}
             <div>
-              <label htmlFor="expiryDate" className="block text-sm font-medium text-gray-700 mb-2">
-                소비기한 *
+              <label htmlFor="expiryDate" className="block text-sm font-medium text-neutral-600 mb-2">
+                소비기한
               </label>
               <Input
                 id="expiryDate"
@@ -376,17 +377,18 @@ export function AddIngredient({ onAdd, onBack }: AddIngredientProps) {
                 value={expiryDate}
                 onChange={(e) => setExpiryDate(e.target.value)}
                 min={getTodayDate()}
+                className="rounded-xl h-12"
                 required
               />
-              <p className="mt-2 text-xs text-gray-500">
+              <p className="mt-2 text-xs text-neutral-400">
                 소비기한 1일 전과 당일에 알림이 전송됩니다
               </p>
             </div>
 
             {/* Storage Type */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">
-                보관 위치 *
+              <label className="block text-sm font-medium text-neutral-600 mb-3">
+                보관 위치
               </label>
               <div className="grid grid-cols-2 gap-3">
                 <StorageButton
@@ -406,12 +408,12 @@ export function AddIngredient({ onAdd, onBack }: AddIngredientProps) {
           </div>
 
           {/* Submit Button */}
-          <div className="mt-6 space-y-3">
+          <div className="mt-4 space-y-2">
             <Button
               type="submit"
-              variant="primary"
+              variant="default"
               size="lg"
-              className="w-full"
+              className="w-full h-14 rounded-2xl text-base font-semibold shadow-none"
               disabled={!name.trim() || !expiryDate}
             >
               등록하기
@@ -420,7 +422,7 @@ export function AddIngredient({ onAdd, onBack }: AddIngredientProps) {
               type="button"
               variant="secondary"
               size="lg"
-              className="w-full"
+              className="w-full h-12 rounded-2xl bg-neutral-100 hover:bg-neutral-200 text-neutral-600 shadow-none"
               onClick={onBack}
             >
               취소
@@ -429,7 +431,7 @@ export function AddIngredient({ onAdd, onBack }: AddIngredientProps) {
         </form>
 
         {/* Helper Text */}
-        <div className="p-4 bg-blue-50 rounded-xl border border-blue-100">
+        <div className="px-4 py-3 bg-blue-50 rounded-2xl">
           <p className="text-sm text-blue-900">
             💡 <span className="font-medium">팁:</span> 사진 인식이나 음성 입력을 사용하면 여러 재료를 한 번에 등록할 수 있습니다!
           </p>
@@ -451,10 +453,10 @@ function StorageButton({ active, onClick, icon, label }: StorageButtonProps) {
     <button
       type="button"
       onClick={onClick}
-      className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${
+      className={`p-4 rounded-2xl transition-all flex flex-col items-center gap-2 ${
         active
-          ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
-          : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
+          ? 'bg-brand-500 text-white'
+          : 'bg-neutral-100 text-neutral-500 hover:bg-neutral-200'
       }`}
     >
       {icon}
