@@ -1,7 +1,7 @@
 import React from 'react';
 import { Clock, Users, ChevronRight } from 'lucide-react';
 import { Recipe } from '../RecipeList';
-import { ImageWithFallback } from '../figma/ImageWithFallback';
+import { getRecipeEmoji } from '../../lib/recipeEmoji';
 
 export interface RecipeCardProps {
   recipe: Recipe;
@@ -23,13 +23,9 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, onClick }) => {
       className="w-full bg-white rounded-2xl shadow-card hover:shadow-card-hover transition-shadow text-left overflow-hidden"
     >
       <div className="flex gap-4 p-4">
-        {/* Image */}
-        <div className="flex-shrink-0 w-20 h-20 bg-neutral-100 rounded-xl overflow-hidden">
-          <ImageWithFallback
-            src={`https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200&h=200&fit=crop`}
-            alt={recipe.title}
-            className="w-full h-full object-cover"
-          />
+        {/* Icon */}
+        <div className="flex-shrink-0 w-20 h-20 bg-brand-50 rounded-xl flex items-center justify-center text-4xl">
+          {getRecipeEmoji(recipe.title)}
         </div>
 
         {/* Info */}

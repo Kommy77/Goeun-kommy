@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ArrowLeft, Clock, Users, Heart, Bookmark, ShoppingCart, CheckCircle2 } from 'lucide-react';
 import { Button } from './button';
 import { Recipe } from '../RecipeList';
-import { ImageWithFallback } from '../figma/ImageWithFallback';
+import { getRecipeEmoji } from '../../lib/recipeEmoji';
 
 interface RecipeDetailProps {
   recipe: Recipe;
@@ -59,13 +59,9 @@ export function RecipeDetail({ recipe, onBack }: RecipeDetailProps) {
         </div>
       </div>
 
-      {/* Hero Image */}
-      <div className="w-full h-56 bg-neutral-100">
-        <ImageWithFallback
-          src={`https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&h=600&fit=crop`}
-          alt={recipe.title}
-          className="w-full h-full object-cover"
-        />
+      {/* Hero Icon */}
+      <div className="w-full h-56 bg-brand-50 flex items-center justify-center text-8xl">
+        {getRecipeEmoji(recipe.title)}
       </div>
 
       {/* Content */}
