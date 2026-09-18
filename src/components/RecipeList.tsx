@@ -4,6 +4,7 @@ import { Button } from './ui/button';
 import { RecipeCard } from './ui/RecipeCard';
 import { RecipeDetail } from './ui/RecipeDetail';
 import { Ingredient } from '../App';
+import { supabase } from '../lib/supabase';
 
 interface RecipeListProps {
   ingredients: Ingredient[];
@@ -154,13 +155,19 @@ export function RecipeList({ ingredients, onBack }: RecipeListProps) {
     setIsLoadingAi(true);
     setAiFailed(false);
 
-    fetch('/api/recommend-recipes', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({
-        ingredients: ingredients.map((ing) => ({ name: ing.name, status: ing.status })),
-      }),
-    })
+    supabase.auth.getSession()
+      .then(({ data: { session } }) =>
+        fetch('/api/recommend-recipes', {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/json',
+            ...(session ? { authorization: `Bearer ${session.access_token}` } : {}),
+          },
+          body: JSON.stringify({
+            ingredients: ingredients.map((ing) => ({ name: ing.name, status: ing.status })),
+          }),
+        })
+      )
       .then((res) => {
         if (!res.ok) throw new Error('추천 실패');
         return res.json();

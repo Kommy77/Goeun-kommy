@@ -3,6 +3,7 @@ import { ArrowLeft, Refrigerator, Snowflake, Camera, Mic, Plus, Carrot, Egg, Mil
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { StorageType } from '../App';
+import { supabase } from '../lib/supabase';
 
 interface AddIngredientProps {
   onAdd: (ingredient: { name: string; expiryDate: string; storage: StorageType }) => void;
@@ -106,9 +107,14 @@ export function AddIngredient({ onAdd, onBack }: AddIngredientProps) {
         reader.readAsDataURL(file);
       });
 
+      const { data: { session } } = await supabase.auth.getSession();
+
       const res = await fetch('/api/recognize-fridge', {
         method: 'POST',
-        headers: { 'content-type': 'application/json' },
+        headers: {
+          'content-type': 'application/json',
+          ...(session ? { authorization: `Bearer ${session.access_token}` } : {}),
+        },
         body: JSON.stringify({ imageBase64: base64, mediaType: file.type || 'image/jpeg' }),
       });
 

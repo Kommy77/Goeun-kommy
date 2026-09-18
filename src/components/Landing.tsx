@@ -28,6 +28,7 @@ export function Landing({ onStart, onQuickStart }: LandingProps) {
         </div>
 
         {/* 수치화된 베네핏 */}
+        <p className="w-full max-w-md text-xs text-neutral-400 mb-2">이런 효과를 목표로 만들었어요</p>
         <div className="w-full max-w-md grid grid-cols-3 gap-2 mb-8">
           <BenefitBadge icon={<TrendingDown className="w-4 h-4" />} value="30%" label="음식물 쓰레기 감소" />
           <BenefitBadge icon={<Clock className="w-4 h-4" />} value="80%" label="메뉴 고민 단축" />

@@ -16,17 +16,17 @@ const TOUR_STEPS = [
     color: 'bg-brand-50 border-brand-200',
   },
   {
-    title: 'Step 2. 오늘의 추천 레시피 보기',
-    description: '등록한 재료로 만들 수 있는 요리를 확인하세요.',
+    title: 'Step 2. AI 추천 레시피 보기',
+    description: 'AI가 지금 보유한 재료로 만들 수 있는 요리를 찾아드려요.',
     icon: <ChefHat className="w-8 h-8 text-purple-600" />,
-    tip: '등록한 재료로 만들 수 있는 요리 10개',
+    tip: '보유 재료로 만들 수 있는 요리 추천',
     color: 'bg-purple-50 border-purple-200',
   },
   {
-    title: 'Step 3. 유통기한 알림 받기',
-    description: '매일 저녁 6시에 "오늘 뭐 먹지?" 알림을 받아보세요.',
+    title: 'Step 3. 유통기한 임박 재료 확인하기',
+    description: '홈 화면 상단 "알림" 탭에서 곧 만료되는 재료를 바로 확인할 수 있어요.',
     icon: <Bell className="w-8 h-8 text-orange-600" />,
-    tip: '매일 저녁 6시에 알림이 옵니다',
+    tip: '앱을 열 때마다 홈 상단에서 확인하세요',
     color: 'bg-orange-50 border-orange-200',
   },
 ];
