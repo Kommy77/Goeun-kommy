@@ -1,19 +1,25 @@
-import React, { useState } from 'react';
-import { Plus, ChefHat, AlertCircle, Calendar, CheckCircle2, ArrowRight, LogOut } from 'lucide-react';
+import React, { useRef, useState } from 'react';
+import { Plus, ChefHat, AlertCircle, Calendar, LogOut } from 'lucide-react';
 import { Button } from './ui/button';
 import { IngredientCard } from './ui/IngredientCard';
 import { BottomNav } from './ui/BottomNav';
-import { Ingredient, Page, OnboardingProgress } from '../App';
+import { Ingredient, Page } from '../App';
+
+interface HomeUser {
+  name: string;
+  email: string;
+  avatarUrl?: string;
+}
 
 interface HomeProps {
   ingredients: Ingredient[];
   onNavigate: (page: Page) => void;
   onDelete: (id: string) => void;
-  onboardingProgress?: OnboardingProgress;
   onSignOut?: () => void;
+  user?: HomeUser;
 }
 
-export function Home({ ingredients, onNavigate, onDelete, onboardingProgress, onSignOut }: HomeProps) {
+export function Home({ ingredients, onNavigate, onDelete, onSignOut, user }: HomeProps) {
   const [activeTab, setActiveTab] = useState<'all' | 'alerts'>('all');
 
   // Filter ingredients that are expiring soon or today
@@ -29,10 +35,6 @@ export function Home({ ingredients, onNavigate, onDelete, onboardingProgress, on
     return statusOrder[a.status] - statusOrder[b.status];
   });
 
-  // Onboarding 진행 상태 체크
-  const showProgressBanner = onboardingProgress && !onboardingProgress.hasCompletedTour;
-  const ingredientCount = ingredients.length;
-
   return (
     <div className="min-h-screen bg-neutral-50 pb-20">
       {/* Header */}
@@ -40,7 +42,7 @@ export function Home({ ingredients, onNavigate, onDelete, onboardingProgress, on
         <div className="px-6 pt-5 pb-3">
           <div className="flex items-center justify-between mb-5">
             <h1 className="text-xl font-bold text-neutral-900 tracking-tight">FreshKeeper</h1>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-2">
               <Button
                 variant="default"
                 size="sm"
@@ -50,15 +52,7 @@ export function Home({ ingredients, onNavigate, onDelete, onboardingProgress, on
                 <Plus className="w-4 h-4" />
                 등록
               </Button>
-              {onSignOut && (
-                <button
-                  onClick={onSignOut}
-                  className="p-2 text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 rounded-xl transition-colors"
-                  aria-label="로그아웃"
-                >
-                  <LogOut className="w-4 h-4" />
-                </button>
-              )}
+              {user && onSignOut && <AccountMenu user={user} onSignOut={onSignOut} />}
             </div>
           </div>
 
@@ -80,17 +74,6 @@ export function Home({ ingredients, onNavigate, onDelete, onboardingProgress, on
           </div>
         </div>
       </div>
-
-      {/* Onboarding Progress Banner */}
-      {showProgressBanner && (
-        <div className="mx-6 mt-4">
-          <ProgressBanner
-            ingredientCount={ingredientCount}
-            hasViewedRecipes={onboardingProgress?.hasViewedRecipes || false}
-            onNavigate={onNavigate}
-          />
-        </div>
-      )}
 
       {/* Alert Banner */}
       {urgentIngredients.length > 0 && activeTab === 'all' && (
@@ -154,6 +137,63 @@ export function Home({ ingredients, onNavigate, onDelete, onboardingProgress, on
   );
 }
 
+interface AccountMenuProps {
+  user: HomeUser;
+  onSignOut: () => void;
+}
+
+function AccountMenu({ user, onSignOut }: AccountMenuProps) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const initial = user.name?.[0] ?? user.email[0].toUpperCase();
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="w-8 h-8 rounded-full overflow-hidden bg-brand-100 flex items-center justify-center text-brand-700 text-sm font-semibold ring-2 ring-transparent hover:ring-brand-200 transition-all"
+        aria-label="계정 메뉴"
+      >
+        {user.avatarUrl ? (
+          <img src={user.avatarUrl} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+        ) : (
+          initial
+        )}
+      </button>
+
+      {open && (
+        <div className="absolute right-0 top-10 w-56 bg-white rounded-2xl shadow-float p-3 z-20">
+          <div className="px-2 pb-2 mb-2 border-b border-neutral-100">
+            <p className="text-sm font-semibold text-neutral-900 truncate">{user.name}</p>
+            <p className="text-xs text-neutral-400 truncate">{user.email}</p>
+          </div>
+          <button
+            onClick={() => {
+              setOpen(false);
+              onSignOut();
+            }}
+            className="w-full flex items-center gap-2 px-2 py-2 rounded-xl text-sm text-neutral-600 hover:bg-neutral-100 hover:text-danger-600 transition-colors"
+          >
+            <LogOut className="w-4 h-4" />
+            로그아웃
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 interface TabButtonProps {
   active: boolean;
   onClick: () => void;
@@ -189,86 +229,6 @@ function EmptyState({ message, icon, action }: EmptyStateProps) {
       </div>
       <p className="text-neutral-600 mb-6">{message}</p>
       {action}
-    </div>
-  );
-}
-
-interface ProgressBannerProps {
-  ingredientCount: number;
-  hasViewedRecipes: boolean;
-  onNavigate: (page: Page) => void;
-}
-
-function ProgressBanner({ ingredientCount, hasViewedRecipes, onNavigate }: ProgressBannerProps) {
-  const step1Complete = ingredientCount >= 3;
-  const step2Complete = hasViewedRecipes;
-
-  // 모든 단계 완료시 표시 안함
-  if (step1Complete && step2Complete) {
-    return null;
-  }
-
-  return (
-    <div className="bg-gradient-to-r from-brand-50 to-teal-50 border border-brand-200 rounded-2xl p-4">
-      <p className="text-xs font-medium text-brand-600 mb-3">시작 가이드</p>
-
-      <div className="space-y-3">
-        {/* Step 1 */}
-        <div className={`flex items-center gap-3 ${step1Complete ? 'opacity-60' : ''}`}>
-          <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-            step1Complete ? 'bg-brand-500 text-white' : 'bg-brand-100 text-brand-600'
-          }`}>
-            {step1Complete ? <CheckCircle2 className="w-4 h-4" /> : '1'}
-          </div>
-          <div className="flex-1">
-            <p className={`text-sm font-medium ${step1Complete ? 'text-neutral-500 line-through' : 'text-neutral-800'}`}>
-              재료 3개 이상 등록하기
-            </p>
-            {!step1Complete && (
-              <p className="text-xs text-neutral-500">{ingredientCount}/3 등록됨</p>
-            )}
-          </div>
-          {step1Complete ? (
-            <span className="text-xs text-brand-600 font-medium">완료!</span>
-          ) : (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onNavigate('add')}
-              className="text-xs gap-1"
-            >
-              등록하기 <ArrowRight className="w-3 h-3" />
-            </Button>
-          )}
-        </div>
-
-        {/* Step 2 */}
-        <div className={`flex items-center gap-3 ${!step1Complete ? 'opacity-40' : step2Complete ? 'opacity-60' : ''}`}>
-          <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-            step2Complete ? 'bg-brand-500 text-white' : 'bg-brand-100 text-brand-600'
-          }`}>
-            {step2Complete ? <CheckCircle2 className="w-4 h-4" /> : '2'}
-          </div>
-          <div className="flex-1">
-            <p className={`text-sm font-medium ${step2Complete ? 'text-neutral-500 line-through' : 'text-neutral-800'}`}>
-              맞춤 레시피 확인하기
-            </p>
-          </div>
-          {step1Complete && !step2Complete && (
-            <Button
-              variant="default"
-              size="sm"
-              onClick={() => onNavigate('recipes')}
-              className="text-xs gap-1 bg-brand-500"
-            >
-              <ChefHat className="w-3 h-3" /> 레시피 보기
-            </Button>
-          )}
-          {step2Complete && (
-            <span className="text-xs text-brand-600 font-medium">완료!</span>
-          )}
-        </div>
-      </div>
     </div>
   );
 }

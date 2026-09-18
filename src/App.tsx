@@ -29,6 +29,18 @@ export interface OnboardingProgress {
   hasCompletedTour: boolean;
 }
 
+function getDisplayUser(session: Session) {
+  if (session.user.is_anonymous) {
+    return { name: '게스트', email: '게스트 세션 (임시)' };
+  }
+  const meta = session.user.user_metadata ?? {};
+  return {
+    name: meta.full_name || meta.name || session.user.email || '사용자',
+    email: session.user.email ?? '',
+    avatarUrl: meta.avatar_url,
+  };
+}
+
 export default function App() {
   const [session, setSession] = useState<Session | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
@@ -66,9 +78,18 @@ export default function App() {
 
   // Track auth session
   useEffect(() => {
+    const maybeShowTour = () => {
+      const saved = localStorage.getItem('freshkeeper_onboarding');
+      const progress = saved ? JSON.parse(saved) : null;
+      if (!progress?.hasCompletedTour) {
+        setShowOnboardingTour(true);
+      }
+    };
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setAuthLoading(false);
+      if (session) maybeShowTour();
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -76,6 +97,7 @@ export default function App() {
       setAuthLoading(false);
       if (session) {
         setCurrentPage((prev) => (prev === 'landing' ? 'home' : prev));
+        maybeShowTour();
       }
     });
 
@@ -231,16 +253,10 @@ export default function App() {
   };
 
   const handleStartFromLanding = () => {
-    if (!onboardingProgress.hasCompletedTour) {
-      setShowOnboardingTour(true);
-    }
     setCurrentPage('home');
   };
 
   const handleQuickStartFromLanding = () => {
-    if (!onboardingProgress.hasCompletedTour) {
-      setShowOnboardingTour(true);
-    }
     setCurrentPage('add');
   };
 
@@ -297,34 +313,24 @@ export default function App() {
               ingredients={ingredients}
               onNavigate={handleNavigate}
               onDelete={deleteIngredient}
-              onboardingProgress={onboardingProgress}
               onSignOut={handleSignOut}
+              user={session ? getDisplayUser(session) : undefined}
             />
           </>
         );
       case 'add':
         return (
-          <>
-            {showOnboardingTour && (
-              <OnboardingTour onComplete={handleCompleteTour} currentStep={1} />
-            )}
-            <AddIngredient
-              onAdd={addIngredient}
-              onBack={() => setCurrentPage('home')}
-            />
-          </>
+          <AddIngredient
+            onAdd={addIngredient}
+            onBack={() => setCurrentPage('home')}
+          />
         );
       case 'recipes':
         return (
-          <>
-            {showOnboardingTour && (
-              <OnboardingTour onComplete={handleCompleteTour} currentStep={2} />
-            )}
-            <RecipeList
-              ingredients={ingredients}
-              onBack={() => setCurrentPage('home')}
-            />
-          </>
+          <RecipeList
+            ingredients={ingredients}
+            onBack={() => setCurrentPage('home')}
+          />
         );
       default:
         return <Landing onStart={handleStartFromLanding} onQuickStart={handleQuickStartFromLanding} />;
