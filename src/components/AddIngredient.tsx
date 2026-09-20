@@ -338,17 +338,17 @@ export function AddIngredient({ onAdd, onBack }: AddIngredientProps) {
           <div className="grid grid-cols-2 gap-3 mt-3">
             <button
               onClick={handleVoiceClick}
-              className="flex items-center justify-center gap-2 p-3 rounded-2xl bg-neutral-50 hover:bg-neutral-100 text-neutral-500 text-sm font-medium transition-colors"
+              className="flex items-center justify-center gap-2 p-3 rounded-2xl bg-neutral-50 hover:bg-neutral-100 text-neutral-500 text-sm font-medium transition-colors text-center"
             >
-              <Mic className="w-4 h-4" />
-              음성으로 등록 (준비 중)
+              <Mic className="w-4 h-4 flex-shrink-0" />
+              <span className="break-keep">음성으로 등록 (준비 중)</span>
             </button>
             <button
               onClick={handleReceiptClick}
-              className="flex items-center justify-center gap-2 p-3 rounded-2xl bg-neutral-50 hover:bg-neutral-100 text-neutral-500 text-sm font-medium transition-colors"
+              className="flex items-center justify-center gap-2 p-3 rounded-2xl bg-neutral-50 hover:bg-neutral-100 text-neutral-500 text-sm font-medium transition-colors text-center"
             >
-              <Receipt className="w-4 h-4" />
-              영수증으로 등록 (준비 중)
+              <Receipt className="w-4 h-4 flex-shrink-0" />
+              <span className="break-keep">영수증으로 등록 (준비 중)</span>
             </button>
           </div>
         </div>
