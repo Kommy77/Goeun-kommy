@@ -330,6 +330,7 @@ export default function App() {
           <RecipeList
             ingredients={ingredients}
             onBack={() => setCurrentPage('home')}
+            onNavigate={handleNavigate}
           />
         );
       default:

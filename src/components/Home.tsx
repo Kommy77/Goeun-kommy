@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Plus, ChefHat, AlertCircle, Calendar, LogOut } from 'lucide-react';
+import { Plus, ChefHat, AlertCircle, Calendar, LogOut, User } from 'lucide-react';
 import { Button } from './ui/button';
 import { IngredientCard } from './ui/IngredientCard';
 import { BottomNav } from './ui/BottomNav';
@@ -156,19 +156,17 @@ function AccountMenu({ user, onSignOut }: AccountMenuProps) {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const initial = user.name?.[0] ?? user.email[0].toUpperCase();
-
   return (
     <div className="relative" ref={ref}>
       <button
         onClick={() => setOpen((v) => !v)}
-        className="w-8 h-8 rounded-full overflow-hidden bg-brand-100 flex items-center justify-center text-brand-700 text-sm font-semibold ring-2 ring-transparent hover:ring-brand-200 transition-all"
-        aria-label="계정 메뉴"
+        className="w-8 h-8 rounded-full overflow-hidden bg-brand-100 flex items-center justify-center text-brand-700 ring-2 ring-transparent hover:ring-brand-200 transition-all"
+        aria-label={`계정 메뉴 (${user.name})`}
       >
         {user.avatarUrl ? (
           <img src={user.avatarUrl} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
         ) : (
-          initial
+          <User className="w-4 h-4" />
         )}
       </button>
 

@@ -1,7 +1,8 @@
 import React, { useRef, useState } from 'react';
-import { ArrowLeft, Refrigerator, Snowflake, Camera, Mic, Plus, Carrot, Egg, Milk, Trash2, Loader2 } from 'lucide-react';
+import { ArrowLeft, Refrigerator, Snowflake, Camera, Mic, Receipt, Plus, Carrot, Egg, Milk, Trash2, Loader2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
+import { ComingSoonDialog } from './ui/ComingSoonDialog';
 import { StorageType } from '../App';
 import { supabase } from '../lib/supabase';
 
@@ -56,6 +57,8 @@ export function AddIngredient({ onAdd, onBack }: AddIngredientProps) {
   const [isRecognizing, setIsRecognizing] = useState(false);
   const [recognizeError, setRecognizeError] = useState<string | null>(null);
   const [reviewItems, setReviewItems] = useState<ReviewItem[] | null>(null);
+  const [showVoiceSoon, setShowVoiceSoon] = useState(false);
+  const [showReceiptSoon, setShowReceiptSoon] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -144,8 +147,11 @@ export function AddIngredient({ onAdd, onBack }: AddIngredientProps) {
   };
 
   const handleVoiceClick = () => {
-    // TODO: 실제 음성 인식 API 연동
-    alert('🎤 음성 입력 기능은 곧 업데이트됩니다!\n\n"양파, 당근, 대파 추가"라고 말하면 한 번에 등록됩니다.');
+    setShowVoiceSoon(true);
+  };
+
+  const handleReceiptClick = () => {
+    setShowReceiptSoon(true);
   };
 
   const updateReviewItem = (id: string, patch: Partial<ReviewItem>) => {
@@ -312,7 +318,26 @@ export function AddIngredient({ onAdd, onBack }: AddIngredientProps) {
               <span className="text-xs text-purple-600">"양파, 당근 추가"</span>
             </button>
           </div>
+
+          <button
+            onClick={handleReceiptClick}
+            className="w-full mt-3 flex items-center justify-center gap-2 p-3 rounded-2xl bg-neutral-50 hover:bg-neutral-100 text-neutral-500 text-sm font-medium transition-colors"
+          >
+            <Receipt className="w-4 h-4" />
+            영수증으로 등록 (준비 중)
+          </button>
         </div>
+
+        <ComingSoonDialog
+          open={showVoiceSoon}
+          onOpenChange={setShowVoiceSoon}
+          description={'"양파, 당근, 대파 추가"처럼 말하면 한 번에 등록되는 음성 입력을 준비하고 있어요. 조금만 기다려주세요!'}
+        />
+        <ComingSoonDialog
+          open={showReceiptSoon}
+          onOpenChange={setShowReceiptSoon}
+          description="마트 영수증 사진을 찍으면 구매한 재료를 한 번에 등록해주는 기능을 준비하고 있어요. 조금만 기다려주세요!"
+        />
 
         {/* 자주 쓰는 재료 템플릿 */}
         {showTemplates && (

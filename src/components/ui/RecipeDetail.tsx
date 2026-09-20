@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Clock, Users, Heart, Bookmark, ShoppingCart, CheckCircle2, Sparkles } from 'lucide-react';
+import { ArrowLeft, Clock, Users, Heart, Bookmark, ShoppingCart, CheckCircle2 } from 'lucide-react';
 import { Button } from './button';
-import { Dialog, DialogContent, DialogTitle, DialogDescription } from './dialog';
+import { ComingSoonDialog } from './ComingSoonDialog';
 import { Recipe } from '../RecipeList';
 import { getRecipeEmoji } from '../../lib/recipeEmoji';
 
@@ -136,24 +136,11 @@ export function RecipeDetail({ recipe, onBack }: RecipeDetailProps) {
           )}
         </div>
 
-        <Dialog open={showShoppingSoon} onOpenChange={setShowShoppingSoon}>
-          <DialogContent className="rounded-3xl border-0 max-w-xs text-center">
-            <div className="w-14 h-14 mx-auto bg-brand-50 rounded-2xl flex items-center justify-center mb-2">
-              <Sparkles className="w-7 h-7 text-brand-500" />
-            </div>
-            <DialogTitle className="text-center text-lg">준비 중인 기능이에요</DialogTitle>
-            <DialogDescription className="text-center">
-              부족한 재료를 바로 주문할 수 있는 제휴 쇼핑몰 연동을 준비하고 있어요. 조금만 기다려주세요!
-            </DialogDescription>
-            <Button
-              size="sm"
-              className="w-full mt-2 rounded-xl shadow-none"
-              onClick={() => setShowShoppingSoon(false)}
-            >
-              확인
-            </Button>
-          </DialogContent>
-        </Dialog>
+        <ComingSoonDialog
+          open={showShoppingSoon}
+          onOpenChange={setShowShoppingSoon}
+          description="부족한 재료를 바로 주문할 수 있는 제휴 쇼핑몰 연동을 준비하고 있어요. 조금만 기다려주세요!"
+        />
 
         {/* Cooking Steps */}
         <div className="bg-white rounded-2xl p-5 shadow-card">

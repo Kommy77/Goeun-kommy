@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { ArrowLeft, ChefHat, Clock, Users, Heart, Bookmark, Sparkles, Loader2 } from 'lucide-react';
+import { ArrowLeft, ChefHat, Clock, Users, Heart, Bookmark, Sparkles, Loader2, Plus } from 'lucide-react';
 import { Button } from './ui/button';
 import { RecipeCard } from './ui/RecipeCard';
 import { RecipeDetail } from './ui/RecipeDetail';
-import { Ingredient } from '../App';
+import { BottomNav } from './ui/BottomNav';
+import { Ingredient, Page } from '../App';
 import { supabase } from '../lib/supabase';
 
 interface RecipeListProps {
   ingredients: Ingredient[];
   onBack: () => void;
+  onNavigate: (page: Page) => void;
 }
 
 export interface Recipe {
@@ -142,7 +144,7 @@ function getFallbackRecipes(ingredients: Ingredient[]): Recipe[] {
   return [...recipesWithMatch].sort((a, b) => b.matchRate - a.matchRate);
 }
 
-export function RecipeList({ ingredients, onBack }: RecipeListProps) {
+export function RecipeList({ ingredients, onBack, onNavigate }: RecipeListProps) {
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [aiRecipes, setAiRecipes] = useState<Recipe[] | null>(null);
   const [isLoadingAi, setIsLoadingAi] = useState(false);
@@ -210,7 +212,7 @@ export function RecipeList({ ingredients, onBack }: RecipeListProps) {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50 pb-6">
+    <div className="min-h-screen bg-neutral-50 pb-20">
       {/* Header */}
       <div className="bg-white sticky top-0 z-10">
         <div className="px-6 py-4">
@@ -250,7 +252,7 @@ export function RecipeList({ ingredients, onBack }: RecipeListProps) {
       {/* Recipes */}
       <div className="px-6 py-4">
         {ingredients.length === 0 ? (
-          <EmptyState />
+          <EmptyState onNavigate={onNavigate} />
         ) : (
           <div className="space-y-3">
             {sortedRecipes.map(recipe => (
@@ -263,20 +265,31 @@ export function RecipeList({ ingredients, onBack }: RecipeListProps) {
           </div>
         )}
       </div>
+
+      {/* Bottom Navigation */}
+      <BottomNav currentPage="recipes" onNavigate={onNavigate} />
     </div>
   );
 }
 
-function EmptyState() {
+interface EmptyStateProps {
+  onNavigate: (page: Page) => void;
+}
+
+function EmptyState({ onNavigate }: EmptyStateProps) {
   return (
     <div className="flex flex-col items-center justify-center py-16 text-center">
       <div className="w-20 h-20 bg-neutral-100 rounded-full flex items-center justify-center mb-4">
         <ChefHat className="w-10 h-10 text-neutral-400" />
       </div>
       <p className="text-neutral-600 mb-2">등록된 식재료가 없습니다</p>
-      <p className="text-sm text-neutral-500">
+      <p className="text-sm text-neutral-500 mb-6">
         식재료를 등록하면 맞춤 레시피를 추천해드려요
       </p>
+      <Button onClick={() => onNavigate('add')} className="gap-2 rounded-xl shadow-none">
+        <Plus className="w-4 h-4" />
+        식재료 등록하기
+      </Button>
     </div>
   );
 }
