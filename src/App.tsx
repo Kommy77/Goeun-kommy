@@ -8,7 +8,7 @@ import { RecipeList } from './components/RecipeList';
 import { OnboardingTour } from './components/OnboardingTour';
 import { supabase } from './lib/supabase';
 
-export type StorageType = '냉장' | '냉동';
+export type StorageType = '냉장' | '냉동' | '실온';
 export type StatusType = '여유' | '임박' | '오늘' | '초과';
 
 export interface Ingredient {

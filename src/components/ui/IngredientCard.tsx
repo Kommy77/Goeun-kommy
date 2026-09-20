@@ -1,5 +1,5 @@
 import React from 'react';
-import { Trash2, Pencil, Refrigerator, Snowflake } from 'lucide-react';
+import { Trash2, Pencil, Refrigerator, Snowflake, Sun } from 'lucide-react';
 import { Ingredient } from '../../App';
 
 interface IngredientCardProps {
@@ -69,8 +69,10 @@ export function IngredientCard({ ingredient, onDelete, onEdit }: IngredientCardP
           <div className="flex-shrink-0 w-10 h-10 bg-neutral-100 rounded-xl flex items-center justify-center">
             {ingredient.storage === '냉장' ? (
               <Refrigerator className="w-5 h-5 text-neutral-500" />
-            ) : (
+            ) : ingredient.storage === '냉동' ? (
               <Snowflake className="w-5 h-5 text-blue-500" />
+            ) : (
+              <Sun className="w-5 h-5 text-warn-500" />
             )}
           </div>
 

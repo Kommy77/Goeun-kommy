@@ -1,14 +1,15 @@
 import React from 'react';
-import { Clock, Users, ChevronRight } from 'lucide-react';
+import { Clock, Users, ChevronRight, Flame } from 'lucide-react';
 import { Recipe } from '../RecipeList';
 import { getRecipeEmoji } from '../../lib/recipeEmoji';
 
 export interface RecipeCardProps {
   recipe: Recipe;
+  urgentCount?: number;
   onClick: () => void;
 }
 
-export const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, onClick }) => {
+export const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, urgentCount = 0, onClick }) => {
   const getMatchColor = (rate: number) => {
     if (rate >= 90) return { bg: 'bg-brand-50', text: 'text-brand-700' };
     if (rate >= 70) return { bg: 'bg-blue-50', text: 'text-blue-700' };
@@ -36,6 +37,13 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, onClick }) => {
             </h3>
             <ChevronRight className="w-4 h-4 text-neutral-300 flex-shrink-0 mt-0.5" />
           </div>
+
+          {urgentCount > 0 && (
+            <div className="inline-flex items-center gap-1 self-start px-2 py-0.5 mb-1.5 rounded-full text-xs font-semibold bg-danger-50 text-danger-600">
+              <Flame className="w-3 h-3" />
+              임박재료 {urgentCount}개 소진
+            </div>
+          )}
 
           <div className="flex items-center gap-3 text-xs text-neutral-500 mb-2.5">
             <span className="flex items-center gap-1">

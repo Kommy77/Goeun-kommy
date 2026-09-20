@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Refrigerator, Snowflake } from 'lucide-react';
+import { Refrigerator, Snowflake, Sun } from 'lucide-react';
 import { Button } from './button';
 import { Input } from './input';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from './dialog';
@@ -68,7 +68,7 @@ export function EditIngredientDialog({ ingredient, onOpenChange, onSave }: EditI
 
           <div>
             <label className="block text-sm font-medium text-neutral-600 mb-2">보관 위치</label>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-3 gap-2">
               <button
                 type="button"
                 onClick={() => setStorage('냉장')}
@@ -88,6 +88,16 @@ export function EditIngredientDialog({ ingredient, onOpenChange, onSave }: EditI
               >
                 <Snowflake className="w-4 h-4" />
                 냉동
+              </button>
+              <button
+                type="button"
+                onClick={() => setStorage('실온')}
+                className={`p-3 rounded-xl flex items-center justify-center gap-2 text-sm font-medium transition-colors ${
+                  storage === '실온' ? 'bg-brand-500 text-white' : 'bg-neutral-100 text-neutral-500'
+                }`}
+              >
+                <Sun className="w-4 h-4" />
+                실온
               </button>
             </div>
           </div>

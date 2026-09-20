@@ -202,16 +202,18 @@ export function RecipeList({ ingredients, onBack, onNavigate }: RecipeListProps)
     .filter((ing) => ing.status === '임박' || ing.status === '오늘')
     .map((ing) => ing.name.toLowerCase());
 
-  const usesUrgentIngredient = (recipe: Recipe) =>
-    recipe.requiredIngredients.some((req) => {
-      const reqLower = req.toLowerCase();
-      return urgentNames.some((urgent) => reqLower.includes(urgent) || urgent.includes(reqLower));
-    });
+  const countUrgentMatches = (recipe: Recipe) =>
+    urgentNames.filter((urgent) =>
+      recipe.requiredIngredients.some((req) => {
+        const reqLower = req.toLowerCase();
+        return reqLower.includes(urgent) || urgent.includes(reqLower);
+      })
+    ).length;
 
   const sortByUrgencyThenMatch = (list: Recipe[]) =>
     [...list].sort((a, b) => {
-      const aUrgent = usesUrgentIngredient(a) ? 1 : 0;
-      const bUrgent = usesUrgentIngredient(b) ? 1 : 0;
+      const aUrgent = countUrgentMatches(a) > 0 ? 1 : 0;
+      const bUrgent = countUrgentMatches(b) > 0 ? 1 : 0;
       if (aUrgent !== bUrgent) return bUrgent - aUrgent;
       return b.matchRate - a.matchRate;
     });
@@ -222,6 +224,7 @@ export function RecipeList({ ingredients, onBack, onNavigate }: RecipeListProps)
     return (
       <RecipeDetail
         recipe={selectedRecipe}
+        urgentCount={countUrgentMatches(selectedRecipe)}
         onBack={() => setSelectedRecipe(null)}
       />
     );
@@ -275,6 +278,7 @@ export function RecipeList({ ingredients, onBack, onNavigate }: RecipeListProps)
               <RecipeCard
                 key={recipe.id}
                 recipe={recipe}
+                urgentCount={countUrgentMatches(recipe)}
                 onClick={() => setSelectedRecipe(recipe)}
               />
             ))}

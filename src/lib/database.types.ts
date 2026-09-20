@@ -14,8 +14,9 @@ export interface Database {
           id: string;
           name: string;
           expiry_date: string;
-          storage: '냉장' | '냉동';
+          storage: '냉장' | '냉동' | '실온';
           status: '여유' | '임박' | '오늘' | '초과';
+          quantity: string | null;
           created_at: string;
           user_id: string | null;
         };
@@ -23,8 +24,9 @@ export interface Database {
           id?: string;
           name: string;
           expiry_date: string;
-          storage: '냉장' | '냉동';
+          storage: '냉장' | '냉동' | '실온';
           status?: '여유' | '임박' | '오늘' | '초과';
+          quantity?: string | null;
           created_at?: string;
           user_id?: string | null;
         };
@@ -32,8 +34,9 @@ export interface Database {
           id?: string;
           name?: string;
           expiry_date?: string;
-          storage?: '냉장' | '냉동';
+          storage?: '냉장' | '냉동' | '실온';
           status?: '여유' | '임박' | '오늘' | '초과';
+          quantity?: string | null;
           created_at?: string;
           user_id?: string | null;
         };

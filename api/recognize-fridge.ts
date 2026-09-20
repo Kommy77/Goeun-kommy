@@ -6,7 +6,7 @@ const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MO
 
 interface RecognizedItem {
   name: string;
-  storage: '냉장' | '냉동';
+  storage: '냉장' | '냉동' | '실온';
   shelfLifeDays: number;
   quantity?: string;
 }
@@ -36,7 +36,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 사진에 보이는 개별 식재료를 최대한 정확히 식별해.
 각 식재료마다 다음을 추정해:
 - name: 이름(한국어, 예: "우유", "계란", "양파")
-- storage: 일반적인 보관 방식("냉장" 또는 "냉동")
+- storage: 일반적인 보관 방식("냉장", "냉동", "실온" 중 하나. 양파/감자/통조림/조미료처럼 상온 보관이 일반적인 품목은 "실온"으로)
 - shelfLifeDays: 구매 후 평균 소비기한(일 단위 정수)
 - quantity: 사진에서 보이는 개수/분량을 최대한 정확히 (예: "1개", "1/4개", "2조각", "300g"). 정확한 개수를 셀 수 없으면 "1개"처럼 최선으로 추정.
 JSON 배열만 응답해.
@@ -82,7 +82,7 @@ JSON 배열만 응답해.
       .filter((item) => item && typeof item.name === 'string')
       .map((item) => ({
         name: item.name,
-        storage: item.storage === '냉동' ? '냉동' : '냉장',
+        storage: item.storage === '냉동' || item.storage === '실온' ? item.storage : '냉장',
         shelfLifeDays: Number.isFinite(item.shelfLifeDays) ? item.shelfLifeDays : 7,
         quantity: typeof item.quantity === 'string' ? item.quantity : undefined,
       }));

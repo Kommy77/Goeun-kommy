@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { ArrowLeft, Refrigerator, Snowflake, Camera, Mic, Receipt, Plus, Carrot, Egg, Milk, Trash2, Loader2 } from 'lucide-react';
+import { ArrowLeft, Refrigerator, Snowflake, Sun, Camera, Mic, Receipt, Plus, Carrot, Egg, Milk, Trash2, Loader2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { ComingSoonDialog } from './ui/ComingSoonDialog';
@@ -139,7 +139,7 @@ export function AddIngredient({ onAdd, onBack }: AddIngredientProps) {
             id: `${Date.now()}-${idx}`,
             name: item.name,
             expiryDate: addDays(item.shelfLifeDays ?? 7),
-            storage: item.storage === '냉동' ? '냉동' : '냉장',
+            storage: item.storage === '냉동' || item.storage === '실온' ? item.storage : '냉장',
             quantity: item.quantity ?? '',
             checked: true,
           })
@@ -257,6 +257,15 @@ export function AddIngredient({ onAdd, onBack }: AddIngredientProps) {
                   >
                     냉동
                   </button>
+                  <button
+                    type="button"
+                    onClick={() => updateReviewItem(item.id, { storage: '실온' })}
+                    className={`px-3 py-2 rounded-xl text-sm font-medium transition-colors ${
+                      item.storage === '실온' ? 'bg-brand-500 text-white' : 'bg-neutral-100 text-neutral-500'
+                    }`}
+                  >
+                    실온
+                  </button>
                 </div>
               </div>
             </div>
@@ -308,43 +317,40 @@ export function AddIngredient({ onAdd, onBack }: AddIngredientProps) {
           {recognizeError && (
             <p className="text-sm text-danger-600 mb-3">{recognizeError}</p>
           )}
-          <div className="grid grid-cols-2 gap-3">
-            <button
-              onClick={handleCameraClick}
-              disabled={isRecognizing}
-              className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-brand-50 hover:bg-brand-100 transition-colors disabled:opacity-60"
-            >
-              <div className="w-11 h-11 bg-brand-500 rounded-full flex items-center justify-center">
-                {isRecognizing ? (
-                  <Loader2 className="w-5 h-5 text-white animate-spin" />
-                ) : (
-                  <Camera className="w-5 h-5 text-white" />
-                )}
-              </div>
-              <span className="text-sm font-semibold text-brand-700">
-                {isRecognizing ? 'AI가 인식 중...' : '사진으로 등록'}
-              </span>
-              <span className="text-xs text-brand-600">냉장고 사진 한 장으로!</span>
-            </button>
+          <button
+            onClick={handleCameraClick}
+            disabled={isRecognizing}
+            className="w-full flex flex-col items-center gap-2 p-4 rounded-2xl bg-brand-50 hover:bg-brand-100 transition-colors disabled:opacity-60"
+          >
+            <div className="w-11 h-11 bg-brand-500 rounded-full flex items-center justify-center">
+              {isRecognizing ? (
+                <Loader2 className="w-5 h-5 text-white animate-spin" />
+              ) : (
+                <Camera className="w-5 h-5 text-white" />
+              )}
+            </div>
+            <span className="text-sm font-semibold text-brand-700">
+              {isRecognizing ? 'AI가 인식 중...' : '사진으로 등록'}
+            </span>
+            <span className="text-xs text-brand-600">냉장고 사진 한 장으로!</span>
+          </button>
+
+          <div className="grid grid-cols-2 gap-3 mt-3">
             <button
               onClick={handleVoiceClick}
-              className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-purple-50 hover:bg-purple-100 transition-colors"
+              className="flex items-center justify-center gap-2 p-3 rounded-2xl bg-neutral-50 hover:bg-neutral-100 text-neutral-500 text-sm font-medium transition-colors"
             >
-              <div className="w-11 h-11 bg-purple-500 rounded-full flex items-center justify-center">
-                <Mic className="w-5 h-5 text-white" />
-              </div>
-              <span className="text-sm font-semibold text-purple-700">음성으로 등록</span>
-              <span className="text-xs text-purple-600">"양파, 당근 추가"</span>
+              <Mic className="w-4 h-4" />
+              음성으로 등록 (준비 중)
+            </button>
+            <button
+              onClick={handleReceiptClick}
+              className="flex items-center justify-center gap-2 p-3 rounded-2xl bg-neutral-50 hover:bg-neutral-100 text-neutral-500 text-sm font-medium transition-colors"
+            >
+              <Receipt className="w-4 h-4" />
+              영수증으로 등록 (준비 중)
             </button>
           </div>
-
-          <button
-            onClick={handleReceiptClick}
-            className="w-full mt-3 flex items-center justify-center gap-2 p-3 rounded-2xl bg-neutral-50 hover:bg-neutral-100 text-neutral-500 text-sm font-medium transition-colors"
-          >
-            <Receipt className="w-4 h-4" />
-            영수증으로 등록 (준비 중)
-          </button>
         </div>
 
         <ComingSoonDialog
@@ -455,7 +461,7 @@ export function AddIngredient({ onAdd, onBack }: AddIngredientProps) {
               <label className="block text-sm font-medium text-neutral-600 mb-3">
                 보관 위치
               </label>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-3 gap-3">
                 <StorageButton
                   active={storage === '냉장'}
                   onClick={() => setStorage('냉장')}
@@ -467,6 +473,12 @@ export function AddIngredient({ onAdd, onBack }: AddIngredientProps) {
                   onClick={() => setStorage('냉동')}
                   icon={<Snowflake className="w-5 h-5" />}
                   label="냉동"
+                />
+                <StorageButton
+                  active={storage === '실온'}
+                  onClick={() => setStorage('실온')}
+                  icon={<Sun className="w-5 h-5" />}
+                  label="실온"
                 />
               </div>
             </div>

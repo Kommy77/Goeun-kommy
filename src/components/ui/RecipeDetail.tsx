@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Clock, Users, Heart, Bookmark, ShoppingCart, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Clock, Users, Heart, Bookmark, ShoppingCart, CheckCircle2, Flame } from 'lucide-react';
 import { Button } from './button';
 import { ComingSoonDialog } from './ComingSoonDialog';
 import { Recipe } from '../RecipeList';
@@ -7,10 +7,11 @@ import { getRecipeEmoji } from '../../lib/recipeEmoji';
 
 interface RecipeDetailProps {
   recipe: Recipe;
+  urgentCount?: number;
   onBack: () => void;
 }
 
-export function RecipeDetail({ recipe, onBack }: RecipeDetailProps) {
+export function RecipeDetail({ recipe, urgentCount = 0, onBack }: RecipeDetailProps) {
   const [liked, setLiked] = useState(false);
   const [saved, setSaved] = useState(false);
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
@@ -88,9 +89,17 @@ export function RecipeDetail({ recipe, onBack }: RecipeDetailProps) {
           </div>
 
           {/* Match Badge */}
-          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand-50 text-brand-700 rounded-full text-sm font-semibold">
-            <CheckCircle2 className="w-4 h-4" />
-            재료 매칭 {recipe.matchRate}%
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand-50 text-brand-700 rounded-full text-sm font-semibold">
+              <CheckCircle2 className="w-4 h-4" />
+              재료 매칭 {recipe.matchRate}%
+            </div>
+            {urgentCount > 0 && (
+              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-danger-50 text-danger-600 rounded-full text-sm font-semibold">
+                <Flame className="w-4 h-4" />
+                임박재료 {urgentCount}개 소진
+              </div>
+            )}
           </div>
         </div>
 
