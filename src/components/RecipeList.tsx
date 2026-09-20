@@ -36,7 +36,7 @@ const seedRecipes: Recipe[] = [
     cookTime: '15분',
     servings: 2,
     matchRate: 100,
-    requiredIngredients: ['김치', '밥', '계란', '참기름'],
+    requiredIngredients: ['김치 200g', '밥 1공기', '계란 1개', '참기름 약간'],
     missingIngredients: [],
     steps: [
       '김치를 잘게 썰어주세요',
@@ -55,7 +55,7 @@ const seedRecipes: Recipe[] = [
     cookTime: '20분',
     servings: 3,
     matchRate: 80,
-    requiredIngredients: ['된장', '두부', '양파', '애호박', '대파'],
+    requiredIngredients: ['된장 2큰술', '두부 1/2모', '양파 1/2개', '애호박 1/3개', '대파 1/2대'],
     missingIngredients: ['대파'],
     steps: [
       '냄비에 물을 끓여주세요',
@@ -74,7 +74,7 @@ const seedRecipes: Recipe[] = [
     cookTime: '10분',
     servings: 2,
     matchRate: 90,
-    requiredIngredients: ['계란', '우유', '소금'],
+    requiredIngredients: ['계란 3개', '우유 2큰술', '소금 약간'],
     missingIngredients: [],
     steps: [
       '계란에 우유와 소금을 넣고 섞어주세요',
@@ -92,7 +92,7 @@ const seedRecipes: Recipe[] = [
     cookTime: '15분',
     servings: 2,
     matchRate: 75,
-    requiredIngredients: ['양파', '당근', '피망', '간장', '참기름'],
+    requiredIngredients: ['양파 1/2개', '당근 1/3개', '피망 1개', '간장 1큰술', '참기름 약간'],
     missingIngredients: ['피망', '간장'],
     steps: [
       '모든 야채를 먹기 좋은 크기로 썰어주세요',
@@ -110,7 +110,7 @@ const seedRecipes: Recipe[] = [
     cookTime: '12분',
     servings: 2,
     matchRate: 95,
-    requiredIngredients: ['토마토', '계란', '설탕', '소금'],
+    requiredIngredients: ['토마토 2개', '계란 2개', '설탕 1작은술', '소금 약간'],
     missingIngredients: [],
     steps: [
       '토마토를 큼직하게 썰어주세요',

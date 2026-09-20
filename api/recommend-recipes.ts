@@ -44,10 +44,12 @@ JSON 배열만 응답해.
   "cookTime": "15분",
   "servings": 2,
   "matchRate": 80,
-  "requiredIngredients": ["재료1", "재료2"],
-  "missingIngredients": ["보유하지 않은 재료"],
+  "requiredIngredients": ["재료1 분량", "재료2 분량"],
+  "missingIngredients": ["보유하지 않은 재료 분량"],
   "steps": ["1단계 설명", "2단계 설명"]
 }
+requiredIngredients와 missingIngredients의 각 항목은 반드시 "재료명 분량" 형식으로 적어(예: "계란 2개", "우유 200ml", "대파 1/2대", "소금 약간"). 분량을 정확히 알 수 없으면 "약간", "적당량"처럼 표현해도 돼.
+missingIngredients에 들어가는 문자열은 requiredIngredients에 있는 해당 재료의 문자열과 정확히 동일해야 해.
 matchRate는 requiredIngredients 중 사용자가 실제로 보유한 재료 비율을 0~100 정수로 계산해.`;
 
   try {
