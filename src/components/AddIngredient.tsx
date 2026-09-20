@@ -7,7 +7,7 @@ import { StorageType } from '../App';
 import { supabase } from '../lib/supabase';
 
 interface AddIngredientProps {
-  onAdd: (ingredient: { name: string; expiryDate: string; storage: StorageType }) => void;
+  onAdd: (ingredient: { name: string; expiryDate: string; storage: StorageType; quantity?: string }) => void;
   onBack: () => void;
 }
 
@@ -16,6 +16,7 @@ interface ReviewItem {
   name: string;
   expiryDate: string;
   storage: StorageType;
+  quantity: string;
   checked: boolean;
 }
 
@@ -51,6 +52,7 @@ export function AddIngredient({ onAdd, onBack }: AddIngredientProps) {
   const [name, setName] = useState('');
   const [expiryDate, setExpiryDate] = useState('');
   const [storage, setStorage] = useState<StorageType>('냉장');
+  const [quantity, setQuantity] = useState('');
   const [showTemplates, setShowTemplates] = useState(true);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -63,11 +65,12 @@ export function AddIngredient({ onAdd, onBack }: AddIngredientProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (name.trim() && expiryDate) {
-      onAdd({ name: name.trim(), expiryDate, storage });
+      onAdd({ name: name.trim(), expiryDate, storage, quantity: quantity.trim() || undefined });
       // Reset form
       setName('');
       setExpiryDate('');
       setStorage('냉장');
+      setQuantity('');
     }
   };
 
@@ -131,13 +134,16 @@ export function AddIngredient({ onAdd, onBack }: AddIngredientProps) {
       }
 
       setReviewItems(
-        items.map((item: { name: string; storage: StorageType; shelfLifeDays: number }, idx: number) => ({
-          id: `${Date.now()}-${idx}`,
-          name: item.name,
-          expiryDate: addDays(item.shelfLifeDays ?? 7),
-          storage: item.storage === '냉동' ? '냉동' : '냉장',
-          checked: true,
-        }))
+        items.map(
+          (item: { name: string; storage: StorageType; shelfLifeDays: number; quantity?: string }, idx: number) => ({
+            id: `${Date.now()}-${idx}`,
+            name: item.name,
+            expiryDate: addDays(item.shelfLifeDays ?? 7),
+            storage: item.storage === '냉동' ? '냉동' : '냉장',
+            quantity: item.quantity ?? '',
+            checked: true,
+          })
+        )
       );
     } catch (err) {
       setRecognizeError('사진 인식 중 오류가 발생했어요. 다시 시도해주세요.');
@@ -166,7 +172,14 @@ export function AddIngredient({ onAdd, onBack }: AddIngredientProps) {
     if (!reviewItems) return;
     reviewItems
       .filter((item) => item.checked && item.name.trim() && item.expiryDate)
-      .forEach((item) => onAdd({ name: item.name.trim(), expiryDate: item.expiryDate, storage: item.storage }));
+      .forEach((item) =>
+        onAdd({
+          name: item.name.trim(),
+          expiryDate: item.expiryDate,
+          storage: item.storage,
+          quantity: item.quantity.trim() || undefined,
+        })
+      );
     setReviewItems(null);
   };
 
@@ -204,6 +217,12 @@ export function AddIngredient({ onAdd, onBack }: AddIngredientProps) {
                   value={item.name}
                   onChange={(e) => updateReviewItem(item.id, { name: e.target.value })}
                   className="flex-1 rounded-xl"
+                />
+                <Input
+                  value={item.quantity}
+                  onChange={(e) => updateReviewItem(item.id, { quantity: e.target.value })}
+                  placeholder="수량 (예: 1개)"
+                  className="w-24 rounded-xl"
                 />
                 <button
                   onClick={() => removeReviewItem(item.id)}
@@ -394,6 +413,21 @@ export function AddIngredient({ onAdd, onBack }: AddIngredientProps) {
                 onChange={(e) => setName(e.target.value)}
                 className="rounded-xl h-12"
                 required
+              />
+            </div>
+
+            {/* Quantity Input */}
+            <div>
+              <label htmlFor="quantity" className="block text-sm font-medium text-neutral-600 mb-2">
+                수량 (선택)
+              </label>
+              <Input
+                id="quantity"
+                type="text"
+                placeholder="예: 1개, 1/4개, 200g"
+                value={quantity}
+                onChange={(e) => setQuantity(e.target.value)}
+                className="rounded-xl h-12"
               />
             </div>
 

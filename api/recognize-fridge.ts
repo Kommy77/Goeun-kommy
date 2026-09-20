@@ -8,6 +8,7 @@ interface RecognizedItem {
   name: string;
   storage: '냉장' | '냉동';
   shelfLifeDays: number;
+  quantity?: string;
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -33,9 +34,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const systemPrompt = `너는 냉장고 사진을 보고 식재료를 인식하는 어시스턴트야.
 사진에 보이는 개별 식재료를 최대한 정확히 식별해.
-각 식재료마다 이름(한국어, 예: "우유", "계란", "양파"), 일반적인 보관 방식("냉장" 또는 "냉동"), 구매 후 평균 소비기한(일 단위 정수)을 추정해.
+각 식재료마다 다음을 추정해:
+- name: 이름(한국어, 예: "우유", "계란", "양파")
+- storage: 일반적인 보관 방식("냉장" 또는 "냉동")
+- shelfLifeDays: 구매 후 평균 소비기한(일 단위 정수)
+- quantity: 사진에서 보이는 개수/분량을 최대한 정확히 (예: "1개", "1/4개", "2조각", "300g"). 정확한 개수를 셀 수 없으면 "1개"처럼 최선으로 추정.
 JSON 배열만 응답해.
-형식: [{"name": "우유", "storage": "냉장", "shelfLifeDays": 7}]
+형식: [{"name": "우유", "storage": "냉장", "shelfLifeDays": 7, "quantity": "1개"}]
 식재료를 하나도 못 찾으면 빈 배열 []을 반환해.`;
 
   try {
@@ -79,6 +84,7 @@ JSON 배열만 응답해.
         name: item.name,
         storage: item.storage === '냉동' ? '냉동' : '냉장',
         shelfLifeDays: Number.isFinite(item.shelfLifeDays) ? item.shelfLifeDays : 7,
+        quantity: typeof item.quantity === 'string' ? item.quantity : undefined,
       }));
 
     res.status(200).json({ items });

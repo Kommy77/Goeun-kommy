@@ -2,8 +2,9 @@ import React, { useRef, useState } from 'react';
 import { Plus, ChefHat, AlertCircle, Calendar, LogOut, User } from 'lucide-react';
 import { Button } from './ui/button';
 import { IngredientCard } from './ui/IngredientCard';
+import { EditIngredientDialog } from './ui/EditIngredientDialog';
 import { BottomNav } from './ui/BottomNav';
-import { Ingredient, Page } from '../App';
+import { Ingredient, Page, StorageType } from '../App';
 
 interface HomeUser {
   name: string;
@@ -15,12 +16,14 @@ interface HomeProps {
   ingredients: Ingredient[];
   onNavigate: (page: Page) => void;
   onDelete: (id: string) => void;
+  onUpdate: (id: string, patch: { name: string; expiryDate: string; storage: StorageType; quantity: string }) => void;
   onSignOut?: () => void;
   user?: HomeUser;
 }
 
-export function Home({ ingredients, onNavigate, onDelete, onSignOut, user }: HomeProps) {
+export function Home({ ingredients, onNavigate, onDelete, onUpdate, onSignOut, user }: HomeProps) {
   const [activeTab, setActiveTab] = useState<'all' | 'alerts'>('all');
+  const [editingIngredient, setEditingIngredient] = useState<Ingredient | null>(null);
 
   // Filter ingredients that are expiring soon or today
   const urgentIngredients = ingredients.filter(
@@ -125,6 +128,7 @@ export function Home({ ingredients, onNavigate, onDelete, onSignOut, user }: Hom
                 key={ingredient.id}
                 ingredient={ingredient}
                 onDelete={onDelete}
+                onEdit={setEditingIngredient}
               />
             ))}
           </div>
@@ -133,6 +137,12 @@ export function Home({ ingredients, onNavigate, onDelete, onSignOut, user }: Hom
 
       {/* Bottom Navigation */}
       <BottomNav currentPage="home" onNavigate={onNavigate} />
+
+      <EditIngredientDialog
+        ingredient={editingIngredient}
+        onOpenChange={(open) => !open && setEditingIngredient(null)}
+        onSave={onUpdate}
+      />
     </div>
   );
 }

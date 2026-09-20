@@ -17,6 +17,7 @@ export interface Ingredient {
   expiryDate: string;
   storage: StorageType;
   status: StatusType;
+  quantity?: string;
   createdAt: string;
 }
 
@@ -130,6 +131,7 @@ export default function App() {
           expiryDate: item.expiry_date,
           storage: item.storage as StorageType,
           status: item.status as StatusType,
+          quantity: item.quantity ?? undefined,
           createdAt: item.created_at,
         }));
         setIngredients(formattedData);
@@ -154,6 +156,7 @@ export default function App() {
             expiry_date: ingredient.expiryDate,
             storage: ingredient.storage,
             status: status,
+            quantity: ingredient.quantity || null,
             user_id: session.user.id,
           },
         ])
@@ -168,9 +171,10 @@ export default function App() {
           expiryDate: data[0].expiry_date,
           storage: data[0].storage as StorageType,
           status: data[0].status as StatusType,
+          quantity: data[0].quantity ?? undefined,
           createdAt: data[0].created_at,
         };
-        setIngredients([newIngredient, ...ingredients]);
+        setIngredients((prev) => [newIngredient, ...prev]);
         updateOnboardingOnAdd();
       }
 
@@ -178,6 +182,45 @@ export default function App() {
     } catch (error) {
       console.error('Error adding ingredient:', error);
       alert('식재료 추가 중 오류가 발생했습니다.');
+    }
+  };
+
+  const updateIngredient = async (
+    id: string,
+    patch: Partial<Pick<Ingredient, 'name' | 'expiryDate' | 'storage' | 'quantity'>>
+  ) => {
+    try {
+      const status = patch.expiryDate ? calculateStatus(patch.expiryDate) : undefined;
+
+      const { data, error } = await supabase
+        .from('ingredients')
+        .update({
+          ...(patch.name !== undefined ? { name: patch.name } : {}),
+          ...(patch.expiryDate !== undefined ? { expiry_date: patch.expiryDate } : {}),
+          ...(patch.storage !== undefined ? { storage: patch.storage } : {}),
+          ...(patch.quantity !== undefined ? { quantity: patch.quantity || null } : {}),
+          ...(status ? { status } : {}),
+        })
+        .eq('id', id)
+        .select();
+
+      if (error) throw error;
+
+      if (data && data[0]) {
+        const updated: Ingredient = {
+          id: data[0].id,
+          name: data[0].name,
+          expiryDate: data[0].expiry_date,
+          storage: data[0].storage as StorageType,
+          status: data[0].status as StatusType,
+          quantity: data[0].quantity ?? undefined,
+          createdAt: data[0].created_at,
+        };
+        setIngredients((prev) => prev.map((ing) => (ing.id === id ? updated : ing)));
+      }
+    } catch (error) {
+      console.error('Error updating ingredient:', error);
+      alert('식재료 수정 중 오류가 발생했습니다.');
     }
   };
 
@@ -190,7 +233,7 @@ export default function App() {
 
       if (error) throw error;
 
-      setIngredients(ingredients.filter((ing) => ing.id !== id));
+      setIngredients((prev) => prev.filter((ing) => ing.id !== id));
     } catch (error) {
       console.error('Error deleting ingredient:', error);
       alert('식재료 삭제 중 오류가 발생했습니다.');
@@ -313,6 +356,7 @@ export default function App() {
               ingredients={ingredients}
               onNavigate={handleNavigate}
               onDelete={deleteIngredient}
+              onUpdate={updateIngredient}
               onSignOut={handleSignOut}
               user={session ? getDisplayUser(session) : undefined}
             />

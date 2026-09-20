@@ -1,13 +1,14 @@
 import React from 'react';
-import { Trash2, Refrigerator, Snowflake } from 'lucide-react';
+import { Trash2, Pencil, Refrigerator, Snowflake } from 'lucide-react';
 import { Ingredient } from '../../App';
 
 interface IngredientCardProps {
   ingredient: Ingredient;
   onDelete: (id: string) => void;
+  onEdit: (ingredient: Ingredient) => void;
 }
 
-export function IngredientCard({ ingredient, onDelete }: IngredientCardProps) {
+export function IngredientCard({ ingredient, onDelete, onEdit }: IngredientCardProps) {
   const statusConfig = {
     '여유': {
       bgColor: 'bg-brand-50',
@@ -53,7 +54,15 @@ export function IngredientCard({ ingredient, onDelete }: IngredientCardProps) {
   };
 
   return (
-    <div className="bg-white rounded-2xl p-4 shadow-card transition-shadow hover:shadow-card-hover">
+    <div
+      onClick={() => onEdit(ingredient)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') onEdit(ingredient);
+      }}
+      className="w-full text-left bg-white rounded-2xl p-4 shadow-card transition-shadow hover:shadow-card-hover cursor-pointer"
+    >
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3 flex-1 min-w-0">
           {/* Storage Icon */}
@@ -69,6 +78,9 @@ export function IngredientCard({ ingredient, onDelete }: IngredientCardProps) {
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-neutral-900 mb-1 truncate">
               {ingredient.name}
+              {ingredient.quantity && (
+                <span className="ml-1.5 text-sm font-normal text-neutral-400">{ingredient.quantity}</span>
+              )}
             </h3>
             <div className="flex items-center gap-1.5 text-sm text-neutral-500">
               <span>{formatDate(ingredient.expiryDate)}</span>
@@ -78,15 +90,28 @@ export function IngredientCard({ ingredient, onDelete }: IngredientCardProps) {
           </div>
         </div>
 
-        {/* Status & Delete */}
+        {/* Status & Actions */}
         <div className="flex items-center gap-1 flex-shrink-0">
           <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${config.bgColor} ${config.textColor}`}>
             {getDaysRemaining(ingredient.expiryDate)}
           </span>
           <button
-            onClick={() => onDelete(ingredient.id)}
-            className="p-2 hover:bg-danger-50 rounded-lg transition-colors group"
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit(ingredient);
+            }}
+            aria-label="수정"
+            className="p-2 hover:bg-neutral-100 rounded-lg transition-colors group"
+          >
+            <Pencil className="w-4 h-4 text-neutral-300 group-hover:text-neutral-600" />
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(ingredient.id);
+            }}
             aria-label="삭제"
+            className="p-2 hover:bg-danger-50 rounded-lg transition-colors group"
           >
             <Trash2 className="w-4 h-4 text-neutral-300 group-hover:text-danger-600" />
           </button>
