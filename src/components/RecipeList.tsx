@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ArrowLeft, ChefHat, Clock, Users, Heart, Bookmark, Sparkles, Loader2, Plus } from 'lucide-react';
+import { ChefHat, Clock, Users, Heart, Bookmark, Sparkles, Loader2, Plus } from 'lucide-react';
 import { Button } from './ui/button';
 import { RecipeCard } from './ui/RecipeCard';
 import { RecipeDetail } from './ui/RecipeDetail';
@@ -9,7 +9,6 @@ import { supabase } from '../lib/supabase';
 
 interface RecipeListProps {
   ingredients: Ingredient[];
-  onBack: () => void;
   onNavigate: (page: Page) => void;
 }
 
@@ -144,7 +143,7 @@ function getFallbackRecipes(ingredients: Ingredient[]): Recipe[] {
   return [...recipesWithMatch].sort((a, b) => b.matchRate - a.matchRate);
 }
 
-export function RecipeList({ ingredients, onBack, onNavigate }: RecipeListProps) {
+export function RecipeList({ ingredients, onNavigate }: RecipeListProps) {
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [aiRecipes, setAiRecipes] = useState<Recipe[] | null>(null);
   const [isLoadingAi, setIsLoadingAi] = useState(false);
@@ -236,12 +235,6 @@ export function RecipeList({ ingredients, onBack, onNavigate }: RecipeListProps)
       <div className="bg-white sticky top-0 z-10">
         <div className="px-6 py-4">
           <div className="flex items-center gap-3 mb-3">
-            <button
-              onClick={onBack}
-              className="p-2 -ml-2 hover:bg-neutral-100 rounded-xl transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5 text-neutral-700" />
-            </button>
             <h1 className="text-lg font-bold text-neutral-900">맞춤 레시피</h1>
           </div>
 
