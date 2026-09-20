@@ -198,9 +198,25 @@ export function RecipeList({ ingredients, onBack, onNavigate }: RecipeListProps)
     };
   }, [ingredients]);
 
-  const sortedRecipes = aiRecipes
-    ? [...aiRecipes].sort((a, b) => b.matchRate - a.matchRate)
-    : getFallbackRecipes(ingredients);
+  const urgentNames = ingredients
+    .filter((ing) => ing.status === '임박' || ing.status === '오늘')
+    .map((ing) => ing.name.toLowerCase());
+
+  const usesUrgentIngredient = (recipe: Recipe) =>
+    recipe.requiredIngredients.some((req) => {
+      const reqLower = req.toLowerCase();
+      return urgentNames.some((urgent) => reqLower.includes(urgent) || urgent.includes(reqLower));
+    });
+
+  const sortByUrgencyThenMatch = (list: Recipe[]) =>
+    [...list].sort((a, b) => {
+      const aUrgent = usesUrgentIngredient(a) ? 1 : 0;
+      const bUrgent = usesUrgentIngredient(b) ? 1 : 0;
+      if (aUrgent !== bUrgent) return bUrgent - aUrgent;
+      return b.matchRate - a.matchRate;
+    });
+
+  const sortedRecipes = sortByUrgencyThenMatch(aiRecipes ?? getFallbackRecipes(ingredients));
 
   if (selectedRecipe) {
     return (
