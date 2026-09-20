@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Plus, ChefHat, AlertCircle, Calendar, LogOut, User } from 'lucide-react';
+import { Plus, ChefHat, AlertCircle, Calendar, LogOut, User, Sprout, Trash } from 'lucide-react';
 import { Button } from './ui/button';
 import { IngredientCard } from './ui/IngredientCard';
 import { EditIngredientDialog } from './ui/EditIngredientDialog';
@@ -19,9 +19,10 @@ interface HomeProps {
   onUpdate: (id: string, patch: { name: string; expiryDate: string; storage: StorageType; quantity: string }) => void;
   onSignOut?: () => void;
   user?: HomeUser;
+  weeklyStats: { consumed: number; wasted: number };
 }
 
-export function Home({ ingredients, onNavigate, onDelete, onUpdate, onSignOut, user }: HomeProps) {
+export function Home({ ingredients, onNavigate, onDelete, onUpdate, onSignOut, user, weeklyStats }: HomeProps) {
   const [activeTab, setActiveTab] = useState<'all' | 'alerts'>('all');
   const [editingIngredient, setEditingIngredient] = useState<Ingredient | null>(null);
 
@@ -74,6 +75,18 @@ export function Home({ ingredients, onNavigate, onDelete, onUpdate, onSignOut, u
               <AlertCircle className="w-3.5 h-3.5" />
               알림 {urgentIngredients.length}
             </TabButton>
+          </div>
+
+          {/* Weekly consumption stats */}
+          <div className="flex items-center gap-3 mt-3 text-xs text-neutral-500">
+            <span className="flex items-center gap-1">
+              <Sprout className="w-3.5 h-3.5 text-brand-500" />
+              이번 주 소비 {weeklyStats.consumed}개
+            </span>
+            <span className="flex items-center gap-1">
+              <Trash className="w-3.5 h-3.5 text-neutral-400" />
+              폐기 {weeklyStats.wasted}개
+            </span>
           </div>
         </div>
       </div>

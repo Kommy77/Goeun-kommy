@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Clock, Users, Heart, Bookmark, ShoppingCart, CheckCircle2, Flame } from 'lucide-react';
+import { ArrowLeft, Clock, Users, Heart, Bookmark, ShoppingCart, CheckCircle2, Flame, PackageCheck } from 'lucide-react';
 import { Button } from './button';
 import { ComingSoonDialog } from './ComingSoonDialog';
 import { Recipe } from '../RecipeList';
@@ -8,23 +8,42 @@ import { getRecipeEmoji } from '../../lib/recipeEmoji';
 interface RecipeDetailProps {
   recipe: Recipe;
   urgentCount?: number;
+  consumableIngredientIds?: string[];
+  onConsume?: (ingredientIds: string[]) => void;
   onBack: () => void;
 }
 
-export function RecipeDetail({ recipe, urgentCount = 0, onBack }: RecipeDetailProps) {
+export function RecipeDetail({
+  recipe,
+  urgentCount = 0,
+  consumableIngredientIds = [],
+  onConsume,
+  onBack,
+}: RecipeDetailProps) {
   const [liked, setLiked] = useState(false);
   const [saved, setSaved] = useState(false);
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
   const [showShoppingSoon, setShowShoppingSoon] = useState(false);
+  const [consumed, setConsumed] = useState(false);
+  const [consumedCount, setConsumedCount] = useState(0);
+
+  const handleConsume = () => {
+    if (!onConsume || consumableIngredientIds.length === 0) return;
+    onConsume(consumableIngredientIds);
+    setConsumedCount(consumableIngredientIds.length);
+    setConsumed(true);
+  };
 
   const toggleStep = (index: number) => {
-    const newCompleted = new Set(completedSteps);
-    if (newCompleted.has(index)) {
-      newCompleted.delete(index);
-    } else {
-      newCompleted.add(index);
-    }
-    setCompletedSteps(newCompleted);
+    setCompletedSteps((prev) => {
+      const newCompleted = new Set(prev);
+      if (newCompleted.has(index)) {
+        newCompleted.delete(index);
+      } else {
+        newCompleted.add(index);
+      }
+      return newCompleted;
+    });
   };
 
   const allStepsCompleted = completedSteps.size === recipe.steps.length;
@@ -189,9 +208,26 @@ export function RecipeDetail({ recipe, urgentCount = 0, onBack }: RecipeDetailPr
           <div className="bg-brand-500 rounded-2xl p-6 text-center text-white">
             <div className="text-4xl mb-2">🎉</div>
             <h3 className="font-bold text-lg mb-1">요리 완성!</h3>
-            <p className="text-sm text-brand-50">
+            <p className="text-sm text-brand-50 mb-4">
               맛있게 드세요!
             </p>
+
+            {consumed ? (
+              <p className="text-sm text-brand-50 bg-white/10 rounded-xl py-2.5">
+                사용한 재료 {consumedCount}개를 냉장고에서 정리했어요
+              </p>
+            ) : (
+              consumableIngredientIds.length > 0 && (
+                <Button
+                  onClick={handleConsume}
+                  variant="secondary"
+                  className="w-full rounded-xl gap-2 bg-white hover:bg-brand-50 text-brand-700 shadow-none"
+                >
+                  <PackageCheck className="w-4 h-4" />
+                  재료 사용 완료 ({consumableIngredientIds.length}개 정리)
+                </Button>
+              )
+            )}
           </div>
         )}
       </div>

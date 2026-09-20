@@ -41,6 +41,29 @@ export interface Database {
           user_id?: string | null;
         };
       };
+      consumption_log: {
+        Row: {
+          id: string;
+          user_id: string;
+          ingredient_name: string;
+          type: '소비' | '폐기';
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          ingredient_name: string;
+          type: '소비' | '폐기';
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          ingredient_name?: string;
+          type?: '소비' | '폐기';
+          created_at?: string;
+        };
+      };
     };
     Views: {
       [_ in never]: never;

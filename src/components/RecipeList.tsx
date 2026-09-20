@@ -10,6 +10,7 @@ import { supabase } from '../lib/supabase';
 interface RecipeListProps {
   ingredients: Ingredient[];
   onNavigate: (page: Page) => void;
+  onConsume: (ingredientIds: string[]) => void;
 }
 
 export interface Recipe {
@@ -143,7 +144,7 @@ function getFallbackRecipes(ingredients: Ingredient[]): Recipe[] {
   return [...recipesWithMatch].sort((a, b) => b.matchRate - a.matchRate);
 }
 
-export function RecipeList({ ingredients, onNavigate }: RecipeListProps) {
+export function RecipeList({ ingredients, onNavigate, onConsume }: RecipeListProps) {
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [aiRecipes, setAiRecipes] = useState<Recipe[] | null>(null);
   const [isLoadingAi, setIsLoadingAi] = useState(false);
@@ -219,11 +220,30 @@ export function RecipeList({ ingredients, onNavigate }: RecipeListProps) {
 
   const sortedRecipes = sortByUrgencyThenMatch(aiRecipes ?? getFallbackRecipes(ingredients));
 
+  const getOwnedIngredientIds = (recipe: Recipe) => {
+    const ownedRequired = recipe.requiredIngredients.filter(
+      (req) => !recipe.missingIngredients.includes(req)
+    );
+    const matchedIds = new Set<string>();
+    ownedRequired.forEach((req) => {
+      const reqLower = req.toLowerCase();
+      ingredients.forEach((ing) => {
+        const nameLower = ing.name.toLowerCase();
+        if (reqLower.includes(nameLower) || nameLower.includes(reqLower)) {
+          matchedIds.add(ing.id);
+        }
+      });
+    });
+    return Array.from(matchedIds);
+  };
+
   if (selectedRecipe) {
     return (
       <RecipeDetail
         recipe={selectedRecipe}
         urgentCount={countUrgentMatches(selectedRecipe)}
+        consumableIngredientIds={getOwnedIngredientIds(selectedRecipe)}
+        onConsume={onConsume}
         onBack={() => setSelectedRecipe(null)}
       />
     );

@@ -48,6 +48,7 @@ export default function App() {
   const [currentPage, setCurrentPage] = useState<Page>('landing');
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
   const [loading, setLoading] = useState(true);
+  const [weeklyStats, setWeeklyStats] = useState({ consumed: 0, wasted: 0 });
   const [showOnboardingTour, setShowOnboardingTour] = useState(false);
   const [onboardingProgress, setOnboardingProgress] = useState<OnboardingProgress>(() => {
     const saved = localStorage.getItem('freshkeeper_onboarding');
@@ -109,11 +110,31 @@ export default function App() {
   useEffect(() => {
     if (session) {
       loadIngredients();
+      refreshConsumptionStats();
     } else {
       setIngredients([]);
       setLoading(false);
     }
   }, [session]);
+
+  const refreshConsumptionStats = async () => {
+    if (!session) return;
+    try {
+      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      const { data, error } = await supabase
+        .from('consumption_log')
+        .select('type')
+        .gte('created_at', sevenDaysAgo);
+
+      if (error) throw error;
+
+      const consumed = data?.filter((row) => row.type === '소비').length ?? 0;
+      const wasted = data?.filter((row) => row.type === '폐기').length ?? 0;
+      setWeeklyStats({ consumed, wasted });
+    } catch (error) {
+      console.error('Error loading consumption stats:', error);
+    }
+  };
 
   const loadIngredients = async () => {
     try {
@@ -226,6 +247,8 @@ export default function App() {
 
   const deleteIngredient = async (id: string) => {
     try {
+      const target = ingredients.find((ing) => ing.id === id);
+
       const { error } = await supabase
         .from('ingredients')
         .delete()
@@ -234,9 +257,40 @@ export default function App() {
       if (error) throw error;
 
       setIngredients((prev) => prev.filter((ing) => ing.id !== id));
+
+      if (target?.status === '초과' && session) {
+        await supabase
+          .from('consumption_log')
+          .insert([{ user_id: session.user.id, ingredient_name: target.name, type: '폐기' }]);
+        refreshConsumptionStats();
+      }
     } catch (error) {
       console.error('Error deleting ingredient:', error);
       alert('식재료 삭제 중 오류가 발생했습니다.');
+    }
+  };
+
+  const consumeIngredients = async (ids: string[]) => {
+    if (ids.length === 0 || !session) return;
+    try {
+      const targets = ingredients.filter((ing) => ids.includes(ing.id));
+
+      const { error } = await supabase
+        .from('ingredients')
+        .delete()
+        .in('id', ids);
+
+      if (error) throw error;
+
+      setIngredients((prev) => prev.filter((ing) => !ids.includes(ing.id)));
+
+      await supabase
+        .from('consumption_log')
+        .insert(targets.map((t) => ({ user_id: session.user.id, ingredient_name: t.name, type: '소비' as const })));
+      refreshConsumptionStats();
+    } catch (error) {
+      console.error('Error consuming ingredients:', error);
+      alert('재료 사용 처리 중 오류가 발생했습니다.');
     }
   };
 
@@ -359,6 +413,7 @@ export default function App() {
               onUpdate={updateIngredient}
               onSignOut={handleSignOut}
               user={session ? getDisplayUser(session) : undefined}
+              weeklyStats={weeklyStats}
             />
           </>
         );
@@ -374,6 +429,7 @@ export default function App() {
           <RecipeList
             ingredients={ingredients}
             onNavigate={handleNavigate}
+            onConsume={consumeIngredients}
           />
         );
       default:
